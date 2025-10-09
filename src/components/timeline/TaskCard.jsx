@@ -73,28 +73,34 @@ export const TaskCard = ({ task }) => {
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow border-l-4" style={{ borderLeftColor: `var(--${task.priority === 'alta' ? 'destructive' : task.priority === 'média' ? 'warning' : 'success'})` }}>
-      <CardContent className="p-4 space-y-3">
+    <Card className="group hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border border-border/50 bg-white/80 backdrop-blur-sm rounded-xl overflow-hidden">
+      <CardContent className="p-5 space-y-4">
         {/* Header com título e prioridade */}
-        <div className="flex items-start justify-between gap-2">
-          <h4 className="font-semibold text-sm flex-1">{task.title}</h4>
+        <div className="flex items-start justify-between gap-3">
+          <h4 className="font-semibold text-base flex-1 group-hover:text-primary transition-colors">{task.title}</h4>
           <Badge
             variant={task.priority === 'alta' ? 'destructive' : 'secondary'}
-            className="text-xs"
+            className="text-xs rounded-full px-3 py-1 font-medium"
           >
             {priorityLabels[task.priority]}
           </Badge>
         </div>
 
-        {/* Progress bar */}
-        <div className="space-y-1">
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Progresso</span>
-            <span className="font-medium">{task.progress}%</span>
+        {/* Progress bar com gradiente */}
+        <div className="space-y-2">
+          <div className="flex justify-between text-xs">
+            <span className="text-muted-foreground font-medium">Progresso</span>
+            <span className="font-semibold text-foreground">{task.progress}%</span>
           </div>
-          <div className="w-full bg-secondary rounded-full h-2">
+          <div className="relative w-full bg-secondary/30 rounded-full h-2.5 overflow-hidden">
             <div
-              className={`h-2 rounded-full transition-all ${getProgressColor(task.progress)}`}
+              className={`h-2.5 rounded-full transition-all duration-500 ${
+                task.progress >= 70
+                  ? 'bg-gradient-to-r from-green-400 to-green-600'
+                  : task.progress >= 40
+                    ? 'bg-gradient-to-r from-yellow-400 to-yellow-600'
+                    : 'bg-gradient-to-r from-red-400 to-red-600'
+              }`}
               style={{ width: `${task.progress}%` }}
             />
           </div>
@@ -102,24 +108,24 @@ export const TaskCard = ({ task }) => {
 
         {/* Devs alocados */}
         {devInfos.length > 0 && (
-          <div className="flex items-center gap-2">
-            <div className="flex -space-x-2">
+          <div className="flex items-center gap-3">
+            <div className="flex -space-x-3">
               {devInfos.slice(0, 3).map((dev) => (
-                <Avatar key={dev.id} className="h-7 w-7 border-2 border-background">
-                  <AvatarFallback className={`text-xs ${dev.color}`}>
+                <Avatar key={dev.id} className="h-8 w-8 border-2 border-white ring-1 ring-border/50 transition-transform hover:scale-110 hover:z-10">
+                  <AvatarFallback className={`text-xs font-semibold ${dev.color}`}>
                     {getInitials(dev.name)}
                   </AvatarFallback>
                 </Avatar>
               ))}
               {devInfos.length > 3 && (
-                <Avatar className="h-7 w-7 border-2 border-background">
-                  <AvatarFallback className="text-xs bg-muted">
+                <Avatar className="h-8 w-8 border-2 border-white ring-1 ring-border/50">
+                  <AvatarFallback className="text-xs bg-gradient-to-br from-gray-100 to-gray-200 font-semibold">
                     +{devInfos.length - 3}
                   </AvatarFallback>
                 </Avatar>
               )}
             </div>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-muted-foreground font-medium">
               {devInfos.length === 1 ? devInfos[0].name : `${devInfos.length} devs`}
             </span>
           </div>
@@ -127,37 +133,37 @@ export const TaskCard = ({ task }) => {
 
         {/* Deadline */}
         {deadlineInfo && (
-          <div className={`flex items-center gap-1 text-xs ${
+          <div className={`flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg ${
             deadlineInfo.isOverdue
-              ? 'text-red-600'
+              ? 'text-red-700 bg-red-50 border border-red-200'
               : deadlineInfo.isSoon
-                ? 'text-yellow-600'
-                : 'text-muted-foreground'
+                ? 'text-amber-700 bg-amber-50 border border-amber-200'
+                : 'text-muted-foreground bg-secondary/50'
           }`}>
-            <Clock className="h-3 w-3" />
+            <Clock className="h-3.5 w-3.5" />
             <span>{deadlineInfo.text}</span>
-            {deadlineInfo.isSoon && <span className="font-medium">(urgente!)</span>}
+            {deadlineInfo.isSoon && <span className="font-semibold">(urgente!)</span>}
           </div>
         )}
 
         {/* Blockers */}
         {task.blockers && task.blockers.length > 0 && (
-          <div className="flex items-start gap-1 text-xs text-red-600 bg-red-50 p-2 rounded">
-            <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-            <span>{task.blockers[0]}</span>
+          <div className="flex items-start gap-2 text-xs text-red-700 bg-gradient-to-r from-red-50 to-red-100/50 p-3 rounded-lg border border-red-200">
+            <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <span className="font-medium">{task.blockers[0]}</span>
           </div>
         )}
 
         {/* Highlights principais */}
         {task.highlights && task.highlights.length > 0 && (
-          <div className="flex items-start gap-1 text-xs text-blue-600 bg-blue-50 p-2 rounded">
-            <CheckCircle2 className="h-3 w-3 mt-0.5 flex-shrink-0" />
-            <span>{task.highlights[0]}</span>
+          <div className="flex items-start gap-2 text-xs text-blue-700 bg-gradient-to-r from-blue-50 to-blue-100/50 p-3 rounded-lg border border-blue-200">
+            <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <span className="font-medium">{task.highlights[0]}</span>
           </div>
         )}
 
         {/* Badge de categoria */}
-        <Badge variant="outline" className="text-xs">
+        <Badge variant="outline" className="text-xs rounded-full font-medium">
           {task.category}
         </Badge>
       </CardContent>
