@@ -2,7 +2,7 @@
  * API Service - Substitui localStorage por chamadas HTTP ao backend
  */
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 class ApiError extends Error {
   constructor(message, status, data) {
@@ -250,7 +250,7 @@ export const api = {
   // ========== HEALTH CHECK ==========
 
   async healthCheck() {
-    const response = await fetch(`${API_URL.replace('/api', '')}/health`);
+    const response = await fetch('/health');
     return response.json();
   }
 };

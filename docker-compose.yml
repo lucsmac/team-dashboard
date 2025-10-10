@@ -48,7 +48,7 @@ services:
   # Frontend React App
   frontend:
     build:
-      context: .
+      context: ./frontend
       dockerfile: Dockerfile
     container_name: team-report-frontend
     restart: unless-stopped

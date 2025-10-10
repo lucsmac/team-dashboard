@@ -184,10 +184,10 @@ O backend estará rodando em `http://localhost:5000`
 
 ### 3. Setup do Frontend
 
-**Em outro terminal**, volte para a raiz do projeto:
+**Em outro terminal**, acesse a pasta frontend:
 
 ```bash
-cd ..  # volta para team-report/
+cd ../frontend  # volta para team-report/frontend
 ```
 
 #### 3.1. Instalar Dependências
@@ -198,11 +198,13 @@ npm install
 
 #### 3.2. Configurar Variáveis de Ambiente
 
+Crie arquivo `.env`:
+
 ```bash
-cp .env.local.example .env.local
+cp .env.example .env 2>/dev/null || echo "VITE_API_URL=http://localhost:5000/api" > .env
 ```
 
-Edite `.env.local` (se necessário):
+Edite `.env` (se necessário):
 
 ```env
 VITE_API_URL=http://localhost:5000/api
@@ -229,7 +231,44 @@ Acesse `http://localhost:5173` no navegador. Você deve ver:
 
 ```
 team-report/
-├── backend/                    # API REST + Database
+├── frontend/                   # 🎨 Frontend React
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── ui/            # shadcn/ui (14 componentes)
+│   │   │   ├── dashboard/     # Páginas principais (4 tabs)
+│   │   │   ├── overview/      # Componentes de métricas
+│   │   │   ├── team/          # TeamMemberCard, TeamFilters
+│   │   │   ├── devs/          # DevTable, DevRow, DevForm
+│   │   │   ├── demands/       # DemandCard, DemandForm
+│   │   │   ├── timeline/      # TimelineTaskForm
+│   │   │   ├── deliveries/    # DeliveryCard
+│   │   │   ├── highlights/    # Painéis de highlights
+│   │   │   ├── layout/        # Container, Header
+│   │   │   └── common/        # LoadingSpinner, ErrorMessage
+│   │   ├── context/
+│   │   │   └── DashboardContext.jsx  # State + API calls
+│   │   ├── hooks/
+│   │   │   ├── useDashboardData.js
+│   │   │   └── useEditMode.js
+│   │   ├── services/
+│   │   │   └── api.js         # HTTP client (40+ métodos)
+│   │   ├── utils/
+│   │   │   ├── enums.js       # Constantes (roles, stages, etc)
+│   │   │   ├── colorUtils.js
+│   │   │   └── dataValidation.js
+│   │   ├── data/
+│   │   │   └── initialData.js # Dados padrão (usado no seed)
+│   │   ├── App.jsx
+│   │   └── index.jsx
+│   ├── Dockerfile             # Build de produção (Nginx)
+│   ├── Dockerfile.dev         # Build dev (Vite hot reload)
+│   ├── nginx.conf             # Configuração Nginx
+│   ├── vite.config.js
+│   ├── tailwind.config.js
+│   ├── package.json
+│   └── README.md
+│
+├── backend/                    # ⚙️  API REST + Database
 │   ├── prisma/
 │   │   ├── schema.prisma      # Modelo do banco de dados
 │   │   └── migrations/        # Histórico de migrations
@@ -238,46 +277,25 @@ team-report/
 │   │   ├── routes/            # Definição de rotas (7 routers)
 │   │   ├── middleware/        # Error handling, etc
 │   │   ├── utils/             # devUtils (sincronização)
+│   │   ├── data/              # initialData (seed)
 │   │   ├── seed.js            # Popular banco
 │   │   └── server.js          # Express app
+│   ├── Dockerfile             # Build de produção
+│   ├── Dockerfile.dev         # Build dev (nodemon)
 │   ├── .env                   # Variáveis de ambiente
 │   ├── package.json
-│   └── README.md
+│   ├── README.md
+│   └── SYNC_LOGIC.md
 │
-├── src/                       # Frontend React
-│   ├── components/
-│   │   ├── ui/               # shadcn/ui (14 componentes)
-│   │   ├── dashboard/        # Páginas principais (4 tabs)
-│   │   ├── overview/         # Componentes de métricas
-│   │   ├── team/             # TeamMemberCard, TeamFilters
-│   │   ├── devs/             # DevTable, DevRow, DevForm
-│   │   ├── demands/          # DemandCard, DemandForm
-│   │   ├── timeline/         # TimelineTaskForm
-│   │   ├── deliveries/       # DeliveryCard
-│   │   ├── highlights/       # Painéis de highlights
-│   │   ├── layout/           # Container, Header
-│   │   └── common/           # LoadingSpinner, ErrorMessage
-│   ├── context/
-│   │   └── DashboardContext.jsx  # State + API calls
-│   ├── hooks/
-│   │   ├── useDashboardData.js
-│   │   └── useEditMode.js
-│   ├── services/
-│   │   └── api.js            # HTTP client (40+ métodos)
-│   ├── utils/
-│   │   ├── enums.js          # Constantes (roles, stages, etc)
-│   │   ├── colorUtils.js
-│   │   └── dataValidation.js
-│   ├── data/
-│   │   └── initialData.js    # Dados padrão (usado no seed)
-│   ├── App.jsx
-│   └── index.jsx
-│
-├── CRUD_UI.md                 # Documentação da interface CRUD
-├── IMPLEMENTATION_SUMMARY.md  # Resumo da implementação
-├── SYNC_LOGIC.md              # Lógica de sincronização Dev ↔ Task
-├── package.json
-└── README.md                  # Este arquivo
+├── docker-compose.yml          # 🐳 Orquestração produção
+├── docker-compose.dev.yml      # 🐳 Orquestração desenvolvimento
+├── .env                        # Variáveis Docker
+├── .env.docker                 # Template de variáveis
+├── DOCKER.md                   # Documentação Docker completa
+├── DOCKER_SUMMARY.md           # Resumo Docker
+├── CRUD_UI.md                  # Documentação da interface CRUD
+├── IMPLEMENTATION_SUMMARY.md   # Resumo da implementação
+└── README.md                   # Este arquivo
 ```
 
 ## 🛠️ Tecnologias
@@ -413,6 +431,8 @@ npm run prisma:generate  # Regenera Prisma Client
 ### Scripts do Frontend
 
 ```bash
+cd frontend
+
 npm run dev       # Dev server em http://localhost:5173
 npm run build     # Build de produção
 npm run preview   # Preview do build

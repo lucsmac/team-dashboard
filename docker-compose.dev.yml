@@ -48,7 +48,7 @@ services:
   # Frontend React App (Development mode with hot reload)
   frontend:
     build:
-      context: .
+      context: ./frontend
       dockerfile: Dockerfile.dev
     container_name: team-report-frontend-dev
     restart: unless-stopped
@@ -59,11 +59,11 @@ services:
     depends_on:
       - backend
     volumes:
-      - .:/app
+      - ./frontend:/app
       - /app/node_modules
     networks:
       - team-report-network-dev
-    command: npm run dev
+    command: npm run dev -- --host 0.0.0.0
 
 networks:
   team-report-network-dev:
