@@ -7,6 +7,8 @@ export const initialData = {
       id: 1,
       name: 'Edu',
       color: 'bg-red-200',
+      role: 'fullstack',
+      seniority: 'senior',
       lastWeek: 'Migração BD - Concluído',
       thisWeek: 'Layout Renault - Em andamento',
       nextWeek: 'Features 4.0'
@@ -15,6 +17,8 @@ export const initialData = {
       id: 2,
       name: 'Renan',
       color: 'bg-yellow-200',
+      role: 'backend',
+      seniority: 'pleno',
       lastWeek: 'API pagamentos - Concluído',
       thisWeek: 'Layout Renault - Em andamento',
       nextWeek: 'Service Desk'
@@ -23,6 +27,8 @@ export const initialData = {
       id: 3,
       name: 'João',
       color: 'bg-blue-200',
+      role: 'backend',
+      seniority: 'senior',
       lastWeek: 'Refatoração auth - Concluído',
       thisWeek: 'Banco Stellantis - Em andamento',
       nextWeek: 'GCLD'
@@ -31,6 +37,8 @@ export const initialData = {
       id: 4,
       name: 'Pedro',
       color: 'bg-gray-800 text-white',
+      role: 'fullstack',
+      seniority: 'pleno',
       lastWeek: 'Deploy automação - Concluído',
       thisWeek: 'Banco Stellantis - Em andamento',
       nextWeek: 'GCLD'
@@ -39,6 +47,8 @@ export const initialData = {
       id: 5,
       name: 'Lucas',
       color: 'bg-white border-2 border-gray-300',
+      role: 'fullstack',
+      seniority: 'especialista',
       lastWeek: 'Documentação API - Concluído',
       thisWeek: 'Service Desk + Projetos especiais',
       nextWeek: 'Genius e Nitro'
@@ -47,6 +57,8 @@ export const initialData = {
       id: 6,
       name: 'Gustavo',
       color: 'bg-green-200',
+      role: 'fullstack',
+      seniority: 'senior',
       lastWeek: 'Testes integração - Concluído',
       thisWeek: 'Churns e emergências',
       nextWeek: 'Features 4.0'
@@ -55,6 +67,8 @@ export const initialData = {
       id: 7,
       name: 'Alisson',
       color: 'bg-purple-200',
+      role: 'qa',
+      seniority: 'pleno',
       lastWeek: 'Correções bugs - Concluído',
       thisWeek: 'Churns e emergências',
       nextWeek: 'Layout Renault'
@@ -63,6 +77,8 @@ export const initialData = {
       id: 8,
       name: 'Pagani',
       color: 'bg-orange-200',
+      role: 'devops',
+      seniority: 'senior',
       lastWeek: 'Otimização queries - Concluído',
       thisWeek: 'Churns e emergências',
       nextWeek: 'Banco Stellantis'
@@ -71,6 +87,8 @@ export const initialData = {
       id: 9,
       name: 'Bruna',
       color: 'bg-teal-200',
+      role: 'frontend',
+      seniority: 'pleno',
       lastWeek: 'UI/UX melhorias - Concluído',
       thisWeek: 'Layout Renault',
       nextWeek: 'Service Desk'
@@ -85,6 +103,7 @@ export const initialData = {
         title: 'Churns e emergências',
         status: 'em-andamento',
         priority: 'alta',
+        stage: 'desenvolvimento',
         assignedDevs: ['Gustavo', 'Alisson', 'Pagani'],
         value: 'Trade-offs',
         details: 'Redução de cancelamento + Negócio direto na MRR + Melhoria na renovação',
@@ -94,7 +113,8 @@ export const initialData = {
         id: 'd2',
         title: 'Features 4.0',
         status: 'planejado',
-        priority: 'média',
+        priority: 'media',
+        stage: 'planejamento',
         assignedDevs: [],
         value: 'Trade-offs',
         details: 'Geração de valor direto e prioridade para o cliente + Diferenciação de produtos',
@@ -107,6 +127,7 @@ export const initialData = {
         title: 'Layout Renault',
         status: 'em-andamento',
         priority: 'alta',
+        stage: 'testes',
         assignedDevs: ['Edu', 'Renan', 'Bruna'],
         value: 'Essencial',
         details: 'Adaptação de layout homologado com requisitos do Módulo 2 + Funcionalidades adicionais',
@@ -119,6 +140,7 @@ export const initialData = {
         title: 'Banco Stellantis',
         status: 'em-andamento',
         priority: 'alta',
+        stage: 'desenvolvimento',
         assignedDevs: ['João', 'Pedro'],
         value: 'Essencial',
         details: 'Revisão técnica do painel dealer Renault em relação ao fechamento novo contrato',
@@ -129,6 +151,7 @@ export const initialData = {
         title: 'GCLD',
         status: 'planejado',
         priority: 'alta',
+        stage: 'planejamento',
         assignedDevs: [],
         value: 'Essencial',
         details: 'Integração com sistema GCLD para gestão de leads',
@@ -140,7 +163,8 @@ export const initialData = {
         id: 'd6',
         title: 'Service Desk + Projetos especiais',
         status: 'em-andamento',
-        priority: 'média',
+        priority: 'media',
+        stage: 'desenvolvimento',
         assignedDevs: ['Lucas'],
         value: 'Essencial',
         details: 'Criar ferramenta interna para rastreamento de incidentes de Tracking e monitorar disponibilidade',
@@ -150,7 +174,8 @@ export const initialData = {
         id: 'd7',
         title: 'Genius e Nitro (prioridades)',
         status: 'planejado',
-        priority: 'média',
+        priority: 'media',
+        stage: 'planejamento',
         assignedDevs: [],
         value: 'Essencial',
         details: 'Adaptação de interface e funcionalidades específicas',
@@ -266,7 +291,9 @@ export const initialData = {
           progress: 90,
           assignedDevs: ['Edu', 'Renan', 'Bruna'],
           deadline: '2025-10-11T15:00:00',
+          deliveryStage: 'testes',
           category: 'Redemoinho',
+          demandId: 'd3', // Vinculado à demand "Layout Renault"
           highlights: ['Demo com cliente na sexta-feira', 'Módulo 2 quase completo'],
           blockers: []
         },
@@ -278,7 +305,9 @@ export const initialData = {
           progress: 60,
           assignedDevs: ['João', 'Pedro'],
           deadline: '2025-10-10T17:00:00',
+          deliveryStage: 'dev',
           category: 'Stellantis',
+          demandId: 'd4', // Vinculado à demand "Banco Stellantis"
           highlights: ['Revisão técnica em andamento'],
           blockers: ['Dependência da API Stellantis com atraso']
         },
@@ -290,19 +319,23 @@ export const initialData = {
           progress: 40,
           assignedDevs: ['Gustavo', 'Alisson', 'Pagani'],
           deadline: null,
+          deliveryStage: 'dev',
           category: '4DX',
+          demandId: 'd1', // Vinculado à demand "Churns e emergências"
           highlights: ['Redução de 15% alcançada'],
           blockers: []
         },
         {
           id: 'tw4',
           title: 'Service Desk + Projetos especiais',
-          priority: 'média',
+          priority: 'media',
           status: 'em-andamento',
           progress: 35,
           assignedDevs: ['Lucas'],
           deadline: '2025-10-12T18:00:00',
+          deliveryStage: 'dev',
           category: 'Projetos Especiais',
+          demandId: 'd6', // Vinculado à demand "Service Desk"
           highlights: ['Ferramenta de tracking em desenvolvimento'],
           blockers: []
         }

@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Desenvolvedores e suas atividades semanais
+model Dev {
+  id         Int      @id @default(autoincrement())
+  name       String
+  color      String
+  role       String   // 'frontend', 'backend', 'fullstack', 'mobile', 'devops', 'qa'
+  seniority  String   // 'junior', 'pleno', 'senior', 'especialista', 'lider'
+  lastWeek   String?  @map("last_week")
+  thisWeek   String?  @map("this_week")
+  nextWeek   String?  @map("next_week")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("devs")
+  @@index([role])
+  @@index([seniority])
+}
+
+// Demandas organizadas por categoria
+model Demand {
+  id            String         @id @default(uuid())
+  category      String
+  title         String
+  status        String         // 'planejado', 'em-andamento', 'concluido', 'bloqueado'
+  priority      String         // 'alta', 'media', 'baixa'
+  stage         String         // 'planejamento', 'desenvolvimento', 'testes', 'deploy'
+  assignedDevs  String[]       @map("assigned_devs")
+  value         String?
+  details       String?
+  links         String[]
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  // Relação com TimelineTasks
+  timelineTasks TimelineTask[]
+
+  @@map("demands")
+  @@index([category])
+  @@index([status])
+  @@index([stage])
+}
+
+// Entregas da semana com valores
+model Delivery {
+  id        String   @id @default(uuid())
+  title     String
+  valueType String?  @map("value_type")
+  items     String[]
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("deliveries")
+}
+
+// Highlights: blockers, achievements, important info
+model Highlight {
+  id        String   @id @default(uuid())
+  type      String   // 'blockers', 'achievements', 'important'
+  text      String
+  severity  String?  // Para blockers e important
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("highlights")
+  @@index([type])
+}
+
+// Tarefas da timeline semanal
+model TimelineTask {
+  id              String    @id @default(uuid())
+  weekType        String    @map("week_type") // 'current', 'previous', 'upcoming'
+  weekStart       DateTime  @map("week_start")
+  weekEnd         DateTime  @map("week_end")
+  title           String
+  priority        String?
+  status          String?
+  progress        Int       @default(0)
+  assignedDevs    String[]  @map("assigned_devs")
+  deadline        DateTime?
+  deliveryStage   String?   @map("delivery_stage") // 'dev', 'testes', 'homologacao', 'deploy'
+  category        String?
+  highlights      String[]
+  blockers        String[]
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relação com Demand (opcional - nem toda task precisa estar vinculada a uma demand)
+  demandId        String?   @map("demand_id")
+  demand          Demand?   @relation(fields: [demandId], references: [id], onDelete: SetNull)
+
+  @@map("timeline_tasks")
+  @@index([weekType])
+  @@index([deliveryStage])
+  @@index([demandId])
+}
+
+// Configurações gerais (week label, priorities, etc)
+model Config {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("config")
+}

@@ -1,19 +1,22 @@
 import { useState, useMemo } from 'react';
-import { LayoutGrid, Table as TableIcon } from 'lucide-react';
+import { LayoutGrid, Table as TableIcon, Plus } from 'lucide-react';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { TeamFilters } from '../team/TeamFilters';
 import { TeamMemberCard } from '../team/TeamMemberCard';
 import { DevTable } from '../devs/DevTable';
 import { Button } from '@/components/ui/button';
+import DevForm from '../devs/DevForm';
 
 /**
  * Página de visualização do time
  */
 export const TeamPage = () => {
-  const { dashboardData } = useDashboardData();
+  const { dashboardData, createDev, updateDev, deleteDev } = useDashboardData();
   const [searchTerm, setSearchTerm] = useState('');
   const [projectFilter, setProjectFilter] = useState('all');
   const [viewMode, setViewMode] = useState('cards'); // 'cards' ou 'table'
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingDev, setEditingDev] = useState(null);
 
   // Extrai lista única de projetos atuais
   const projects = useMemo(() => {
@@ -30,6 +33,24 @@ export const TeamPage = () => {
     });
   }, [dashboardData.devs, searchTerm, projectFilter]);
 
+  const handleOpenForm = (dev = null) => {
+    setEditingDev(dev);
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setEditingDev(null);
+  };
+
+  const handleSave = async (formData) => {
+    if (editingDev) {
+      await updateDev(editingDev.id, formData);
+    } else {
+      await createDev(formData);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Filtros e toggle de visualização */}
@@ -43,6 +64,14 @@ export const TeamPage = () => {
         />
 
         <div className="flex gap-2">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => handleOpenForm()}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Dev
+          </Button>
           <Button
             variant={viewMode === 'cards' ? 'default' : 'outline'}
             size="sm"
@@ -72,7 +101,12 @@ export const TeamPage = () => {
       {viewMode === 'cards' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredDevs.map((dev) => (
-            <TeamMemberCard key={dev.id} dev={dev} />
+            <TeamMemberCard
+              key={dev.id}
+              dev={dev}
+              onEdit={handleOpenForm}
+              onDelete={deleteDev}
+            />
           ))}
         </div>
       )}
@@ -91,6 +125,14 @@ export const TeamPage = () => {
           <p className="text-sm mt-2">Tente ajustar os filtros de busca</p>
         </div>
       )}
+
+      {/* Form Dialog */}
+      <DevForm
+        dev={editingDev}
+        isOpen={isFormOpen}
+        onClose={handleCloseForm}
+        onSave={handleSave}
+      />
     </div>
   );
 };

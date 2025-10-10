@@ -2,7 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { DemandCard } from '../demands/DemandCard';
-import { FolderOpen, ChevronDown } from 'lucide-react';
+import DemandForm from '../demands/DemandForm';
+import { FolderOpen, ChevronDown, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
@@ -10,10 +11,12 @@ import { Button } from '@/components/ui/button';
  * Página de demandas organizada por categoria
  */
 export const DemandsPage = () => {
-  const { dashboardData } = useDashboardData();
+  const { dashboardData, createDemand, updateDemand, deleteDemand } = useDashboardData();
   const [expandedCategories, setExpandedCategories] = useState(
     Object.keys(dashboardData.demands)
   );
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingDemand, setEditingDemand] = useState(null);
 
   const totalDemands = Object.values(dashboardData.demands).flat().length;
 
@@ -25,15 +28,41 @@ export const DemandsPage = () => {
     );
   };
 
+  const handleOpenForm = (demand = null) => {
+    setEditingDemand(demand);
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setEditingDemand(null);
+  };
+
+  const handleSave = async (formData) => {
+    if (editingDemand) {
+      await updateDemand(editingDemand.id, formData);
+    } else {
+      await createDemand(formData);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header com resumo */}
       <Card>
         <CardHeader>
-          <CardTitle>Demandas por Categoria</CardTitle>
-          <CardDescription>
-            {totalDemands} {totalDemands === 1 ? 'demanda total' : 'demandas totais'} distribuídas em {Object.keys(dashboardData.demands).length} {Object.keys(dashboardData.demands).length === 1 ? 'categoria' : 'categorias'}
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Demandas por Categoria</CardTitle>
+              <CardDescription>
+                {totalDemands} {totalDemands === 1 ? 'demanda total' : 'demandas totais'} distribuídas em {Object.keys(dashboardData.demands).length} {Object.keys(dashboardData.demands).length === 1 ? 'categoria' : 'categorias'}
+              </CardDescription>
+            </div>
+            <Button onClick={() => handleOpenForm()} size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Demanda
+            </Button>
+          </div>
         </CardHeader>
       </Card>
 
@@ -81,7 +110,13 @@ export const DemandsPage = () => {
                   <CardContent className="pt-0">
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                       {demands.map((demand) => (
-                        <DemandCard key={demand.id} demand={demand} category={category} />
+                        <DemandCard
+                          key={demand.id}
+                          demand={demand}
+                          category={category}
+                          onEdit={handleOpenForm}
+                          onDelete={deleteDemand}
+                        />
                       ))}
                     </div>
                   </CardContent>
@@ -91,6 +126,14 @@ export const DemandsPage = () => {
           })}
         </div>
       )}
+
+      {/* Form Dialog */}
+      <DemandForm
+        demand={editingDemand}
+        isOpen={isFormOpen}
+        onClose={handleCloseForm}
+        onSave={handleSave}
+      />
     </div>
   );
 };
