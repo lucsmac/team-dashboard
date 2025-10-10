@@ -38,7 +38,7 @@ export const UpcomingDeliveries = () => {
               <ul className="ml-6 space-y-1">
                 {delivery.items.slice(0, 2).map((item, idx) => (
                   <li key={idx} className="text-xs text-muted-foreground flex items-center gap-2">
-                    <span className="text-blue-600">•</span>
+                    <span className="text-muted-foreground">•</span>
                     <span className="truncate">{item}</span>
                   </li>
                 ))}

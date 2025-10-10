@@ -46,13 +46,13 @@ export const RecentHighlights = () => {
             <div className="flex items-center gap-2">
               <Award className="h-4 w-4 text-green-600" />
               <h4 className="text-sm font-medium">Conquistas</h4>
-              <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
+              <Badge variant="outline" className="text-xs">
                 {dashboardData.highlights.achievements.length}
               </Badge>
             </div>
             {recentAchievements.map((achievement) => (
-              <Alert key={achievement.id} className="py-2 border-green-200 bg-green-50">
-                <AlertDescription className="text-xs text-green-900">
+              <Alert key={achievement.id} className="py-2 border-green-500/20 bg-green-500/5">
+                <AlertDescription className="text-xs text-foreground">
                   {achievement.text}
                 </AlertDescription>
               </Alert>

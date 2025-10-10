@@ -30,67 +30,67 @@ export const CurrentWeekSection = ({ data }) => {
   });
 
   return (
-    <Card className="relative bg-gradient-to-br from-blue-50/50 via-white to-blue-50/30 backdrop-blur-sm border border-blue-200 shadow-xl rounded-2xl overflow-hidden">
-      {/* Accent gradient top border */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 via-blue-600 to-blue-400" />
+    <Card className="relative border-2 shadow-xl rounded-xl overflow-hidden">
+      {/* Accent top border - neutro */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-foreground" />
 
       <CardHeader className="pb-5 pt-6">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
             <CardTitle className="text-xl font-bold flex items-center gap-3">
-              <div className="p-2 bg-blue-600 rounded-lg">
-                <Zap className="h-5 w-5 text-white" />
+              <div className="p-2 bg-foreground rounded-lg">
+                <Zap className="h-5 w-5 text-background" />
               </div>
-              <span className="bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent">
+              <span className="text-foreground">
                 Semana Atual
               </span>
             </CardTitle>
             <div className="flex items-center gap-2 text-sm text-muted-foreground ml-14">
               <Calendar className="h-4 w-4" />
-              <span className="font-semibold">{periodText}</span>
+              <span className="font-medium">{periodText}</span>
             </div>
           </div>
-          <Badge className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-1.5 rounded-full shadow-md">
+          <Badge className="bg-foreground text-background px-4 py-1.5 rounded-full">
             Em Andamento
           </Badge>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {/* Estatísticas rápidas - layout horizontal moderno */}
-        <div className="flex items-center justify-between gap-4 p-4 bg-white/60 backdrop-blur rounded-xl border border-blue-100">
+        {/* Estatísticas rápidas - neutro */}
+        <div className="flex items-center justify-between gap-4 p-4 bg-muted/30 rounded-xl border">
           <div className="flex items-center gap-3 flex-1">
-            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-md">
-              <Zap className="h-5 w-5 text-white" />
+            <div className="p-3 bg-muted rounded-lg">
+              <Zap className="h-5 w-5 text-foreground" />
             </div>
             <div>
-              <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{ongoingCount}</div>
+              <div className="text-2xl font-bold text-foreground">{ongoingCount}</div>
               <div className="text-xs text-muted-foreground font-medium">Em Andamento</div>
             </div>
           </div>
           <div className="h-10 w-px bg-border" />
           <div className="flex items-center gap-3 flex-1">
-            <div className="p-3 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-md">
-              <AlertTriangle className="h-5 w-5 text-white" />
+            <div className="p-3 bg-red-100 rounded-lg">
+              <AlertTriangle className="h-5 w-5 text-red-700" />
             </div>
             <div>
-              <div className="text-2xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">{highPriorityCount}</div>
+              <div className="text-2xl font-bold text-red-700">{highPriorityCount}</div>
               <div className="text-xs text-muted-foreground font-medium">Alta Prioridade</div>
             </div>
           </div>
           <div className="h-10 w-px bg-border" />
           <div className="flex items-center gap-3 flex-1">
-            <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-md">
-              <Users className="h-5 w-5 text-white" />
+            <div className="p-3 bg-muted rounded-lg">
+              <Users className="h-5 w-5 text-foreground" />
             </div>
             <div>
-              <div className="text-2xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">{uniqueDevs}</div>
+              <div className="text-2xl font-bold text-foreground">{uniqueDevs}</div>
               <div className="text-xs text-muted-foreground font-medium">Devs Ativos</div>
             </div>
           </div>
         </div>
 
-        {/* Alertas críticos */}
+        {/* Alertas críticos - mantém cores de severidade */}
         {alerts && alerts.length > 0 && (
           <div className="space-y-3">
             <h4 className="text-sm font-bold flex items-center gap-2 text-foreground">
@@ -104,7 +104,7 @@ export const CurrentWeekSection = ({ data }) => {
                 <Alert
                   key={idx}
                   variant={alert.severity === 'alta' ? 'destructive' : 'default'}
-                  className="py-3 rounded-xl border-l-4"
+                  className="py-3 rounded-lg border-l-4"
                 >
                   <AlertDescription className="text-sm font-medium">
                     {alert.text}
@@ -134,11 +134,11 @@ export const CurrentWeekSection = ({ data }) => {
           )}
         </div>
 
-        {/* Resumo de alocação */}
-        <div className="bg-gradient-to-br from-white/80 to-blue-50/50 backdrop-blur p-5 rounded-xl border border-blue-100 shadow-sm">
+        {/* Resumo de alocação - neutro */}
+        <div className="bg-muted/30 p-5 rounded-lg border">
           <h4 className="text-sm font-bold flex items-center gap-2 text-foreground mb-4">
-            <div className="p-1.5 bg-blue-100 rounded-lg">
-              <Users className="h-4 w-4 text-blue-600" />
+            <div className="p-1.5 bg-muted rounded-lg">
+              <Users className="h-4 w-4 text-foreground" />
             </div>
             Resumo de Alocação
           </h4>

@@ -24,7 +24,7 @@ export const MetricsCards = () => {
       subtitle: `${utilization}% utilização`,
       icon: Users,
       color: 'text-blue-600',
-      bgColor: 'bg-blue-50'
+      bgColor: 'bg-muted/50'
     },
     {
       title: 'Demandas Ativas',
@@ -32,7 +32,7 @@ export const MetricsCards = () => {
       subtitle: `${getPlannedDemandsCount()} planejadas`,
       icon: TrendingUp,
       color: 'text-green-600',
-      bgColor: 'bg-green-50'
+      bgColor: 'bg-muted/50'
     },
     {
       title: 'Entraves',
@@ -40,15 +40,15 @@ export const MetricsCards = () => {
       subtitle: 'requerem atenção',
       icon: AlertCircle,
       color: 'text-red-600',
-      bgColor: 'bg-red-50'
+      bgColor: 'bg-muted/50'
     },
     {
       title: 'Conquistas',
       value: getAchievementsCount(),
       subtitle: 'esta semana',
       icon: Award,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50'
+      color: 'text-foreground',
+      bgColor: 'bg-muted/50'
     }
   ];
 
@@ -57,7 +57,7 @@ export const MetricsCards = () => {
       {metrics.map((metric) => {
         const Icon = metric.icon;
         return (
-          <Card key={metric.title}>
+          <Card key={metric.title} className="transition-all hover:shadow-lg hover:-translate-y-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 {metric.title}

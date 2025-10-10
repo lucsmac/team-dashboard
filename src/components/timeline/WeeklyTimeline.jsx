@@ -24,13 +24,13 @@ export const WeeklyTimeline = () => {
 
   return (
     <div className="space-y-8">
-      {/* Título da seção */}
+      {/* Título da seção - neutro */}
       <div className="space-y-2">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-700 via-blue-600 to-blue-800 bg-clip-text text-transparent flex items-center gap-3">
-          <span className="text-3xl">📅</span>
+        <h2 className="text-2xl font-bold text-foreground flex items-center gap-3">
+          <span className="text-2xl">📅</span>
           Timeline Semanal
         </h2>
-        <p className="text-sm text-muted-foreground font-medium">
+        <p className="text-sm text-muted-foreground">
           Acompanhe o progresso do time ao longo das semanas
         </p>
       </div>
@@ -40,23 +40,23 @@ export const WeeklyTimeline = () => {
         {/* Layout Desktop: Horizontal com conectores */}
         <div className="hidden lg:block">
           <div className="grid gap-8 relative" style={{ gridTemplateColumns: '1fr 1.5fr 1fr' }}>
-            {/* Conectores visuais entre cards - linha fina e vibrante */}
-            <div className="absolute top-8 left-0 right-0 h-0.5 bg-gradient-to-r from-green-300 via-blue-500 to-gray-300 rounded-full shadow-sm" style={{ zIndex: 0 }} />
+            {/* Conectores visuais entre cards - linha neutra */}
+            <div className="absolute top-8 left-0 right-0 h-px bg-border" style={{ zIndex: 0 }} />
 
-            {/* Dots posicionados corretamente sobre cada card */}
-            {/* Dot esquerdo - Semana Anterior (1fr de 3.5fr total = 28.5%) */}
+            {/* Dots posicionados corretamente sobre cada card - neutros */}
+            {/* Dot esquerdo - Semana Anterior */}
             <div className="absolute top-8 left-[14.3%] -translate-x-1/2 -translate-y-1/2 z-10">
-              <div className="w-4 h-4 bg-gradient-to-br from-green-400 to-green-600 rounded-full border-3 border-white shadow-lg ring-2 ring-green-200" />
+              <div className="w-3 h-3 bg-muted-foreground rounded-full border-2 border-background shadow" />
             </div>
 
-            {/* Dot central - Semana Atual (meio do card central) */}
+            {/* Dot central - Semana Atual */}
             <div className="absolute top-8 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-              <div className="w-5 h-5 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full border-3 border-white shadow-xl ring-2 ring-blue-300 animate-pulse" />
+              <div className="w-4 h-4 bg-foreground rounded-full border-2 border-background shadow-md" />
             </div>
 
-            {/* Dot direito - Próxima Semana (85.7%) */}
+            {/* Dot direito - Próxima Semana */}
             <div className="absolute top-8 left-[85.7%] -translate-x-1/2 -translate-y-1/2 z-10">
-              <div className="w-4 h-4 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full border-3 border-white shadow-lg ring-2 ring-gray-200" />
+              <div className="w-3 h-3 bg-muted rounded-full border-2 border-background shadow" />
             </div>
 
             {/* Semana Anterior - menor */}
@@ -80,13 +80,13 @@ export const WeeklyTimeline = () => {
 
         {/* Layout Mobile/Tablet: Vertical com conectores laterais */}
         <div className="lg:hidden space-y-8 relative pl-8">
-          {/* Linha vertical conectora - fina e vibrante */}
-          <div className="absolute left-4 top-8 bottom-8 w-0.5 bg-gradient-to-b from-green-300 via-blue-500 to-gray-300 rounded-full -z-10 shadow-sm" />
+          {/* Linha vertical conectora - neutra */}
+          <div className="absolute left-4 top-8 bottom-8 w-px bg-border -z-10" />
 
-          {/* Dots nas seções com gradientes */}
-          <div className="absolute left-4 top-14 w-4 h-4 bg-gradient-to-br from-green-400 to-green-600 rounded-full -translate-x-1/2 border-3 border-white shadow-lg ring-2 ring-green-200" />
-          <div className="absolute left-4 top-[calc(33.33%+4rem)] w-5 h-5 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full -translate-x-1/2 border-3 border-white shadow-xl ring-2 ring-blue-300 animate-pulse z-10" />
-          <div className="absolute left-4 bottom-14 w-4 h-4 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full -translate-x-1/2 border-3 border-white shadow-lg ring-2 ring-gray-200" />
+          {/* Dots nas seções - neutros */}
+          <div className="absolute left-4 top-14 w-3 h-3 bg-muted-foreground rounded-full -translate-x-1/2 border-2 border-background shadow" />
+          <div className="absolute left-4 top-[calc(33.33%+4rem)] w-4 h-4 bg-foreground rounded-full -translate-x-1/2 border-2 border-background shadow-md z-10" />
+          <div className="absolute left-4 bottom-14 w-3 h-3 bg-muted rounded-full -translate-x-1/2 border-2 border-background shadow" />
 
           {/* Semana Anterior */}
           <div>
@@ -107,19 +107,19 @@ export const WeeklyTimeline = () => {
         </div>
       </div>
 
-      {/* Legenda moderna */}
-      <div className="flex items-center justify-center gap-8 text-sm pt-6 border-t border-border/50">
-        <div className="flex items-center gap-3 bg-white/50 backdrop-blur px-4 py-2.5 rounded-full border border-green-200/50 shadow-sm">
-          <div className="w-3 h-3 bg-gradient-to-br from-green-400 to-green-600 rounded-full ring-2 ring-green-200" />
-          <span className="font-medium text-foreground">Completada</span>
+      {/* Legenda neutra */}
+      <div className="flex items-center justify-center gap-6 text-xs pt-4 border-t">
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 bg-muted-foreground rounded-full" />
+          <span className="text-muted-foreground">Completada</span>
         </div>
-        <div className="flex items-center gap-3 bg-white/50 backdrop-blur px-4 py-2.5 rounded-full border border-blue-200/50 shadow-sm">
-          <div className="w-4 h-4 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full ring-2 ring-blue-300 animate-pulse" />
-          <span className="font-medium text-foreground">Em Andamento</span>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 bg-foreground rounded-full" />
+          <span className="text-foreground font-medium">Em Andamento</span>
         </div>
-        <div className="flex items-center gap-3 bg-white/50 backdrop-blur px-4 py-2.5 rounded-full border border-gray-200/50 shadow-sm">
-          <div className="w-3 h-3 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full ring-2 ring-gray-200" />
-          <span className="font-medium text-foreground">Planejada</span>
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 bg-muted rounded-full" />
+          <span className="text-muted-foreground">Planejada</span>
         </div>
       </div>
     </div>

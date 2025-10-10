@@ -86,7 +86,7 @@ export const TaskCard = ({ task }) => {
           </Badge>
         </div>
 
-        {/* Progress bar com gradiente */}
+        {/* Progress bar - tons pastéis sem gradiente */}
         <div className="space-y-2">
           <div className="flex justify-between text-xs">
             <span className="text-muted-foreground font-medium">Progresso</span>
@@ -96,10 +96,10 @@ export const TaskCard = ({ task }) => {
             <div
               className={`h-2.5 rounded-full transition-all duration-500 ${
                 task.progress >= 70
-                  ? 'bg-gradient-to-r from-green-400 to-green-600'
+                  ? 'bg-green-300'
                   : task.progress >= 40
-                    ? 'bg-gradient-to-r from-yellow-400 to-yellow-600'
-                    : 'bg-gradient-to-r from-red-400 to-red-600'
+                    ? 'bg-yellow-300'
+                    : 'bg-red-300'
               }`}
               style={{ width: `${task.progress}%` }}
             />
@@ -119,7 +119,7 @@ export const TaskCard = ({ task }) => {
               ))}
               {devInfos.length > 3 && (
                 <Avatar className="h-8 w-8 border-2 border-white ring-1 ring-border/50">
-                  <AvatarFallback className="text-xs bg-gradient-to-br from-gray-100 to-gray-200 font-semibold">
+                  <AvatarFallback className="text-xs bg-gray-100 font-semibold">
                     +{devInfos.length - 3}
                   </AvatarFallback>
                 </Avatar>
@@ -146,17 +146,17 @@ export const TaskCard = ({ task }) => {
           </div>
         )}
 
-        {/* Blockers */}
+        {/* Blockers - pastel sem gradiente */}
         {task.blockers && task.blockers.length > 0 && (
-          <div className="flex items-start gap-2 text-xs text-red-700 bg-gradient-to-r from-red-50 to-red-100/50 p-3 rounded-lg border border-red-200">
+          <div className="flex items-start gap-2 text-xs text-red-700 bg-red-50 p-3 rounded-lg border border-red-200">
             <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
             <span className="font-medium">{task.blockers[0]}</span>
           </div>
         )}
 
-        {/* Highlights principais */}
+        {/* Highlights principais - pastel sem gradiente */}
         {task.highlights && task.highlights.length > 0 && (
-          <div className="flex items-start gap-2 text-xs text-blue-700 bg-gradient-to-r from-blue-50 to-blue-100/50 p-3 rounded-lg border border-blue-200">
+          <div className="flex items-start gap-2 text-xs text-blue-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
             <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
             <span className="font-medium">{task.highlights[0]}</span>
           </div>

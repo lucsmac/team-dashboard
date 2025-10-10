@@ -49,16 +49,16 @@ export const UpcomingWeeksSection = ({ data }) => {
   };
 
   return (
-    <Card className="relative bg-gradient-to-br from-gray-50/20 via-white to-slate-50/30 backdrop-blur-sm border border-gray-200/60 opacity-60 hover:opacity-100 transition-all duration-300 hover:shadow-lg rounded-2xl overflow-hidden hover:scale-[1] scale-[0.99]">
-      {/* Accent gradient top border */}
-      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-gray-300 via-gray-400 to-gray-300" />
+    <Card className="relative border opacity-70 hover:opacity-100 transition-all duration-300 hover:shadow-lg rounded-xl overflow-hidden">
+      {/* Accent top border - neutro */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-muted" />
 
       <CardHeader className="pb-4 pt-5">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
             <CardTitle className="text-base font-bold flex items-center gap-2.5">
-              <div className="p-1.5 bg-gray-100 rounded-lg">
-                <Clock className="h-4 w-4 text-gray-600" />
+              <div className="p-1.5 bg-muted rounded-lg">
+                <Clock className="h-4 w-4 text-muted-foreground" />
               </div>
               <span className="text-foreground">Próxima Semana</span>
             </CardTitle>
@@ -67,18 +67,18 @@ export const UpcomingWeeksSection = ({ data }) => {
               <span className="font-medium">{periodText}</span>
             </div>
           </div>
-          <Badge variant="outline" className="bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 border-gray-300 px-3 py-1 rounded-full font-semibold">
+          <Badge variant="outline" className="px-3 py-1 rounded-full font-medium">
             Planejada
           </Badge>
         </div>
       </CardHeader>
 
       <CardContent className="space-y-5">
-        {/* Estatísticas rápidas */}
-        <div className="flex items-center gap-3 p-4 bg-white/60 backdrop-blur rounded-xl border border-gray-100">
+        {/* Estatísticas rápidas - neutro */}
+        <div className="flex items-center gap-3 p-4 bg-muted/30 rounded-lg border">
           <div className="flex items-center gap-3 flex-1">
-            <div className="p-2.5 bg-gradient-to-br from-gray-400 to-gray-500 rounded-xl shadow-sm">
-              <Calendar className="h-4 w-4 text-white" />
+            <div className="p-2.5 bg-muted rounded-lg">
+              <Calendar className="h-4 w-4 text-foreground" />
             </div>
             <div>
               <div className="text-xl font-bold text-foreground">{totalTasks}</div>
@@ -87,11 +87,11 @@ export const UpcomingWeeksSection = ({ data }) => {
           </div>
           <div className="h-10 w-px bg-border" />
           <div className="flex items-center gap-3 flex-1">
-            <div className="p-2.5 bg-gradient-to-br from-red-400 to-red-500 rounded-xl shadow-sm">
-              <AlertTriangle className="h-4 w-4 text-white" />
+            <div className="p-2.5 bg-red-100 rounded-lg">
+              <AlertTriangle className="h-4 w-4 text-red-700" />
             </div>
             <div>
-              <div className="text-xl font-bold text-foreground">{highPriorityCount}</div>
+              <div className="text-xl font-bold text-red-700">{highPriorityCount}</div>
               <div className="text-xs text-muted-foreground font-medium">Alta Prioridade</div>
             </div>
           </div>
@@ -101,7 +101,7 @@ export const UpcomingWeeksSection = ({ data }) => {
         {!isExpanded && previewTasks.length > 0 && (
           <div className="space-y-2">
             {previewTasks.map((task, idx) => (
-              <div key={idx} className="flex items-start gap-3 text-sm bg-white/70 p-3 rounded-xl border border-gray-200 hover:border-gray-300 transition-colors">
+              <div key={idx} className="flex items-start gap-3 text-sm bg-muted/20 p-3 rounded-lg border hover:border-foreground/20 transition-colors">
                 <span className="text-base">{priorityLabels[task.priority]}</span>
                 <span className="flex-1 font-medium text-foreground">{task.title}</span>
                 {task.assignedDevs && task.assignedDevs.length > 0 && (
@@ -138,7 +138,7 @@ export const UpcomingWeeksSection = ({ data }) => {
 
         {/* Conteúdo expandido */}
         {isExpanded && (
-          <div className="space-y-4 pt-3 border-t border-gray-100">
+          <div className="space-y-4 pt-3 border-t">
             {/* Todas as tarefas */}
             {plannedTasks.length > 0 && (
               <div className="space-y-3">
@@ -147,7 +147,7 @@ export const UpcomingWeeksSection = ({ data }) => {
                   Tarefas Planejadas
                 </h4>
                 {plannedTasks.map((task, idx) => (
-                  <div key={idx} className="flex items-start gap-3 text-sm bg-white/70 p-4 rounded-xl border border-gray-200">
+                  <div key={idx} className="flex items-start gap-3 text-sm bg-muted/20 p-4 rounded-lg border">
                     <span className="text-base">{priorityLabels[task.priority]}</span>
                     <div className="flex-1 space-y-2">
                       <div className="font-semibold text-foreground">{task.title}</div>
@@ -184,7 +184,7 @@ export const UpcomingWeeksSection = ({ data }) => {
                   <span className="text-lg">📝</span>
                   Preparação
                 </h4>
-                <p className="text-sm text-muted-foreground bg-secondary/50 p-4 rounded-xl border italic leading-relaxed">
+                <p className="text-sm text-muted-foreground bg-muted/20 p-4 rounded-lg border italic leading-relaxed">
                   "{notes}"
                 </p>
               </div>
@@ -197,7 +197,7 @@ export const UpcomingWeeksSection = ({ data }) => {
           variant="ghost"
           size="sm"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full hover:bg-gray-50/50 rounded-xl"
+          className="w-full hover:bg-muted/30 rounded-lg"
         >
           {isExpanded ? (
             <>

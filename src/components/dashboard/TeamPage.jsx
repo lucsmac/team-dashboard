@@ -7,9 +7,9 @@ import { DevTable } from '../devs/DevTable';
 import { Button } from '@/components/ui/button';
 
 /**
- * Aba de visualização do time
+ * Página de visualização do time
  */
-export const TeamTab = () => {
+export const TeamPage = () => {
   const { dashboardData } = useDashboardData();
   const [searchTerm, setSearchTerm] = useState('');
   const [projectFilter, setProjectFilter] = useState('all');

@@ -6,9 +6,9 @@ import { useDashboardData } from '@/hooks/useDashboardData';
 import { getSeverityColor, getInfoTypeColor } from '@/utils/colorUtils';
 
 /**
- * Aba de highlights (entraves, conquistas, informações importantes)
+ * Página de highlights (entraves, conquistas, informações importantes)
  */
-export const HighlightsTab = () => {
+export const HighlightsPage = () => {
   const { dashboardData } = useDashboardData();
 
   const { blockers, achievements, important } = dashboardData.highlights;
@@ -16,7 +16,7 @@ export const HighlightsTab = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Entraves */}
-      <Card className="border-t-4 border-red-500">
+      <Card className="border-t-2 border-red-600">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2">
@@ -54,14 +54,14 @@ export const HighlightsTab = () => {
       </Card>
 
       {/* Conquistas */}
-      <Card className="border-t-4 border-green-500">
+      <Card className="border-t-2 border-green-600">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2">
               <Award className="h-5 w-5 text-green-600" />
               Conquistas
             </CardTitle>
-            <Badge variant="outline" className="bg-green-50 text-green-700">
+            <Badge variant="outline">
               {achievements.length}
             </Badge>
           </div>
@@ -75,9 +75,9 @@ export const HighlightsTab = () => {
             achievements.map((achievement) => (
               <Alert
                 key={achievement.id}
-                className="py-3 border-green-200 bg-green-50"
+                className="py-3 border-green-500/20 bg-green-500/5"
               >
-                <AlertDescription className="text-sm text-green-900">
+                <AlertDescription className="text-sm text-foreground">
                   {achievement.text}
                 </AlertDescription>
               </Alert>
@@ -87,14 +87,14 @@ export const HighlightsTab = () => {
       </Card>
 
       {/* Informações Importantes */}
-      <Card className="border-t-4 border-blue-500">
+      <Card className="border-t-2 border-foreground">
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center gap-2">
-              <Info className="h-5 w-5 text-blue-600" />
+              <Info className="h-5 w-5 text-foreground" />
               Informações
             </CardTitle>
-            <Badge variant="outline" className="bg-blue-50 text-blue-700">
+            <Badge variant="outline">
               {important.length}
             </Badge>
           </div>
@@ -107,17 +107,17 @@ export const HighlightsTab = () => {
           ) : (
             important.map((info) => {
               const bgClass = info.type === 'success'
-                ? 'bg-green-50 border-green-200 text-green-900'
+                ? 'bg-green-500/5 border-green-500/20'
                 : info.type === 'warning'
-                  ? 'bg-yellow-50 border-yellow-200 text-yellow-900'
-                  : 'bg-blue-50 border-blue-200 text-blue-900';
+                  ? 'bg-yellow-500/5 border-yellow-500/20'
+                  : 'bg-muted/30 border-border';
 
               return (
                 <Alert
                   key={info.id}
                   className={`py-3 ${bgClass}`}
                 >
-                  <AlertDescription className="text-sm">
+                  <AlertDescription className="text-sm text-foreground">
                     {info.text}
                   </AlertDescription>
                 </Alert>

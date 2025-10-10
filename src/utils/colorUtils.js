@@ -11,10 +11,10 @@ export const getPriorityColor = (priority) => {
 
 export const getStatusColor = (status) => {
   const colors = {
-    [STATUS.CONCLUIDO]: 'bg-green-100 border-green-400',
-    [STATUS.EM_ANDAMENTO]: 'bg-blue-100 border-blue-400',
-    [STATUS.PLANEJADO]: 'bg-gray-100 border-gray-400',
-    [STATUS.BLOQUEADO]: 'bg-red-100 border-red-400'
+    [STATUS.CONCLUIDO]: 'border-l-2 border-l-green-500',
+    [STATUS.EM_ANDAMENTO]: 'border-l-2 border-l-blue-500',
+    [STATUS.PLANEJADO]: 'border-l-2 border-l-muted-foreground',
+    [STATUS.BLOQUEADO]: 'border-l-2 border-l-red-500'
   };
   return colors[status] || colors[STATUS.PLANEJADO];
 };

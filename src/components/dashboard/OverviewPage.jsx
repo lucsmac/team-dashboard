@@ -6,9 +6,9 @@ import { WeeklyTimeline } from '../timeline/WeeklyTimeline';
 import { Separator } from '@/components/ui/separator';
 
 /**
- * Aba de visão geral / resumo executivo
+ * Página de visão geral / resumo executivo
  */
-export const OverviewTab = () => {
+export const OverviewPage = () => {
   return (
     <div className="space-y-6">
       {/* Métricas principais */}

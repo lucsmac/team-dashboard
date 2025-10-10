@@ -30,9 +30,9 @@ export const TeamMemberCard = ({ dev }) => {
         </div>
 
         {/* Esta Semana */}
-        <div className="bg-blue-50 p-3 rounded-lg">
-          <p className="text-xs text-blue-600 font-medium mb-1">Esta Semana</p>
-          <p className="text-sm font-semibold text-gray-900">{dev.thisWeek}</p>
+        <div className="bg-muted/50 p-3 rounded-lg border-l-2 border-foreground">
+          <p className="text-xs text-foreground font-medium mb-1">Esta Semana</p>
+          <p className="text-sm font-semibold text-foreground">{dev.thisWeek}</p>
         </div>
 
         {/* Próxima Semana */}
