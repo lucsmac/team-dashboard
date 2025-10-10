@@ -12,6 +12,9 @@
     "prisma:studio": "prisma studio",
     "seed": "node src/seed.js"
   },
+  "prisma": {
+    "seed": "node src/seed.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

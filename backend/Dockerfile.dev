@@ -1,0 +1,29 @@
+# Backend Dockerfile for Development
+FROM node:18-alpine
+
+# Instalar dependências necessárias
+RUN apk add --no-cache openssl libc6-compat
+
+# Definir diretório de trabalho
+WORKDIR /app
+
+# Copiar package.json e package-lock.json
+COPY package*.json ./
+
+# Instalar TODAS as dependências (incluindo dev)
+RUN npm install
+
+# Copiar Prisma schema primeiro (necessário para gerar client)
+COPY prisma ./prisma
+
+# Gerar Prisma Client com binaryTargets corretos para Alpine
+RUN npx prisma generate
+
+# Copiar resto do código do projeto
+COPY . .
+
+# Expor porta
+EXPOSE 5000
+
+# Comando para desenvolvimento com nodemon
+CMD ["npm", "run", "dev"]

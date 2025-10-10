@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { PrismaClient } from './generated/prisma/index.js';
-import { initialData } from '../../src/data/initialData.js';
+import { initialData } from './data/initialData.js';
 
 const prisma = new PrismaClient();
 
