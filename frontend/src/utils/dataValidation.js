@@ -4,9 +4,8 @@ export const validateDev = (dev) => {
     typeof dev.id !== 'undefined' &&
     typeof dev.name === 'string' &&
     typeof dev.color === 'string' &&
-    typeof dev.lastWeek === 'string' &&
-    typeof dev.thisWeek === 'string' &&
-    typeof dev.nextWeek === 'string'
+    typeof dev.role === 'string' &&
+    typeof dev.seniority === 'string'
   );
 };
 

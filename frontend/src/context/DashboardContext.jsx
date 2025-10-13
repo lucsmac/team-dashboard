@@ -80,8 +80,12 @@ export const DashboardProvider = ({ children }) => {
           // Keep full task objects with all relationships intact for TaskCard
           tasks: tasks.map(t => ({
             ...t,
+            // Transform assignedDevs from array of objects to array of names
+            assignedDevs: t.assignedDevs?.map(assignment => assignment.dev.name) || [],
             // Add computed priority field for sorting/filtering
-            priority: t.demand?.priority || 'media'
+            priority: t.demand?.priority || 'media',
+            category: t.demand?.category || '',
+            progress: t.progress || 0
           })),
           alerts
         };
@@ -104,6 +108,8 @@ export const DashboardProvider = ({ children }) => {
           // Keep full task objects with all relationships intact
           plannedTasks: tasks.map(t => ({
             ...t,
+            // Transform assignedDevs from array of objects to array of names
+            assignedDevs: t.assignedDevs?.map(assignment => assignment.dev.name) || [],
             // Add computed priority and category fields for easier access
             priority: t.demand?.priority || 'media',
             category: t.demand?.category || ''
@@ -148,6 +154,11 @@ export const DashboardProvider = ({ children }) => {
         await loadTimeline();
       } catch (timelineErr) {
         console.warn('Timeline não disponível:', timelineErr);
+        // Se timeline falhar, usar do initialData
+        setDashboardData(prev => ({
+          ...prev,
+          timeline: initialData.timeline
+        }));
       }
     } catch (err) {
       console.error('Error loading dashboard:', err);

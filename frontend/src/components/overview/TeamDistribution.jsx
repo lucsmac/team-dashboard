@@ -4,55 +4,70 @@ import { Badge } from '@/components/ui/badge';
 
 /**
  * Distribuição do time por projetos/tarefas
+ * Usa dados da timeline para agrupar desenvolvedores por task
  */
 export const TeamDistribution = () => {
   const { dashboardData } = useDashboardData();
 
-  // Agrupa devs por projeto atual (thisWeek)
-  const projectGroups = dashboardData.devs.reduce((acc, dev) => {
-    const project = dev.thisWeek;
-    if (!acc[project]) {
-      acc[project] = [];
+  // Agrupa tasks por categoria e conta desenvolvedores únicos
+  const taskDistribution = {};
+
+  dashboardData.timeline?.currentWeek?.tasks?.forEach(task => {
+    const key = task.title;
+    if (!taskDistribution[key]) {
+      taskDistribution[key] = {
+        category: task.category,
+        devs: new Set(),
+        priority: task.priority
+      };
     }
-    acc[project].push(dev);
-    return {};
-  }, {});
+    task.assignedDevs?.forEach(devName => {
+      taskDistribution[key].devs.add(devName);
+    });
+  });
 
-  // Conta ocorrências de cada projeto
-  const projectCounts = dashboardData.devs.reduce((acc, dev) => {
-    const project = dev.thisWeek;
-    acc[project] = (acc[project] || 0) + 1;
-    return acc;
-  }, {});
+  // Converte para array e ordena por quantidade de desenvolvedores
+  const taskList = Object.entries(taskDistribution)
+    .map(([taskName, data]) => ({
+      name: taskName,
+      category: data.category,
+      count: data.devs.size,
+      priority: data.priority
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5); // Top 5 tasks
 
-  const projectList = Object.entries(projectCounts)
-    .sort((a, b) => b[1] - a[1]) // Ordena por quantidade decrescente
-    .slice(0, 5); // Top 5 projetos
+  const totalDevs = dashboardData.devs.length;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Distribuição do Time</CardTitle>
-        <CardDescription>Alocação atual por projeto</CardDescription>
+        <CardDescription>Alocação atual por task</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {projectList.map(([project, count]) => {
-            const percentage = Math.round((count / dashboardData.devs.length) * 100);
+          {taskList.map((task) => {
+            const percentage = totalDevs > 0 ? Math.round((task.count / totalDevs) * 100) : 0;
             return (
-              <div key={project} className="space-y-2">
+              <div key={task.name} className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{project}</p>
+                    <p className="text-sm font-medium truncate">{task.name}</p>
+                    <p className="text-xs text-muted-foreground">{task.category}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary">{count} devs</Badge>
+                    <Badge variant="secondary">{task.count} devs</Badge>
                     <span className="text-sm text-muted-foreground">{percentage}%</span>
                   </div>
                 </div>
                 <div className="w-full bg-secondary rounded-full h-2">
                   <div
-                    className="bg-primary h-2 rounded-full transition-all"
+                    className={`h-2 rounded-full transition-all ${
+                      task.priority === 'alta' ? 'bg-red-500' :
+                      task.priority === 'media' ? 'bg-yellow-500' :
+                      'bg-green-500'
+                    }`}
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
@@ -60,9 +75,9 @@ export const TeamDistribution = () => {
             );
           })}
 
-          {projectList.length === 0 && (
+          {taskList.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-4">
-              Nenhuma alocação registrada
+              Nenhuma task com desenvolvedores alocados
             </p>
           )}
         </div>

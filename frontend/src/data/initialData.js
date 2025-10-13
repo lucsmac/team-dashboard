@@ -8,90 +8,63 @@ export const initialData = {
       name: 'Edu',
       color: 'bg-red-200',
       role: 'fullstack',
-      seniority: 'senior',
-      lastWeek: 'Migração BD - Concluído',
-      thisWeek: 'Layout Renault - Em andamento',
-      nextWeek: 'Features 4.0'
+      seniority: 'senior'
     },
     {
       id: 2,
       name: 'Renan',
       color: 'bg-yellow-200',
       role: 'backend',
-      seniority: 'pleno',
-      lastWeek: 'API pagamentos - Concluído',
-      thisWeek: 'Layout Renault - Em andamento',
-      nextWeek: 'Service Desk'
+      seniority: 'pleno'
     },
     {
       id: 3,
       name: 'João',
       color: 'bg-blue-200',
       role: 'backend',
-      seniority: 'senior',
-      lastWeek: 'Refatoração auth - Concluído',
-      thisWeek: 'Banco Stellantis - Em andamento',
-      nextWeek: 'GCLD'
+      seniority: 'senior'
     },
     {
       id: 4,
       name: 'Pedro',
       color: 'bg-gray-800 text-white',
       role: 'fullstack',
-      seniority: 'pleno',
-      lastWeek: 'Deploy automação - Concluído',
-      thisWeek: 'Banco Stellantis - Em andamento',
-      nextWeek: 'GCLD'
+      seniority: 'pleno'
     },
     {
       id: 5,
       name: 'Lucas',
       color: 'bg-white border-2 border-gray-300',
       role: 'fullstack',
-      seniority: 'especialista',
-      lastWeek: 'Documentação API - Concluído',
-      thisWeek: 'Service Desk + Projetos especiais',
-      nextWeek: 'Genius e Nitro'
+      seniority: 'especialista'
     },
     {
       id: 6,
       name: 'Gustavo',
       color: 'bg-green-200',
       role: 'fullstack',
-      seniority: 'senior',
-      lastWeek: 'Testes integração - Concluído',
-      thisWeek: 'Churns e emergências',
-      nextWeek: 'Features 4.0'
+      seniority: 'senior'
     },
     {
       id: 7,
       name: 'Alisson',
       color: 'bg-purple-200',
       role: 'qa',
-      seniority: 'pleno',
-      lastWeek: 'Correções bugs - Concluído',
-      thisWeek: 'Churns e emergências',
-      nextWeek: 'Layout Renault'
+      seniority: 'pleno'
     },
     {
       id: 8,
       name: 'Pagani',
       color: 'bg-orange-200',
       role: 'devops',
-      seniority: 'senior',
-      lastWeek: 'Otimização queries - Concluído',
-      thisWeek: 'Churns e emergências',
-      nextWeek: 'Banco Stellantis'
+      seniority: 'senior'
     },
     {
       id: 9,
       name: 'Bruna',
       color: 'bg-teal-200',
       role: 'frontend',
-      seniority: 'pleno',
-      lastWeek: 'UI/UX melhorias - Concluído',
-      thisWeek: 'Layout Renault',
-      nextWeek: 'Service Desk'
+      seniority: 'pleno'
     }
   ],
 

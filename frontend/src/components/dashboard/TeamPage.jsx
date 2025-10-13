@@ -18,20 +18,30 @@ export const TeamPage = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDev, setEditingDev] = useState(null);
 
-  // Extrai lista única de projetos atuais (filtra vazios)
+  // Extrai lista única de tasks/projetos atuais da timeline
   const projects = useMemo(() => {
-    const unique = [...new Set(dashboardData.devs.map(dev => dev.thisWeek))];
+    const taskTitles = dashboardData.timeline?.currentWeek?.tasks?.map(task => task.title) || [];
+    const unique = [...new Set(taskTitles)];
     return unique.filter(p => p && p.trim() !== '').sort();
-  }, [dashboardData.devs]);
+  }, [dashboardData.timeline]);
 
   // Filtra devs baseado nos filtros ativos
   const filteredDevs = useMemo(() => {
     return dashboardData.devs.filter(dev => {
       const matchesSearch = dev.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesProject = projectFilter === 'all' || dev.thisWeek === projectFilter;
-      return matchesSearch && matchesProject;
+
+      // Se houver filtro de projeto, verifica se o dev está alocado em alguma task com esse título
+      if (projectFilter !== 'all') {
+        const devTasks = dashboardData.timeline?.currentWeek?.tasks?.filter(
+          task => task.assignedDevs?.includes(dev.name) && task.title === projectFilter
+        ) || [];
+        const matchesProject = devTasks.length > 0;
+        return matchesSearch && matchesProject;
+      }
+
+      return matchesSearch;
     });
-  }, [dashboardData.devs, searchTerm, projectFilter]);
+  }, [dashboardData.devs, dashboardData.timeline, searchTerm, projectFilter]);
 
   const handleOpenForm = (dev = null) => {
     setEditingDev(dev);

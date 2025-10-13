@@ -4,6 +4,7 @@ import { DevRow } from './DevRow';
 
 /**
  * Tabela de alocação de desenvolvedores
+ * As tasks são buscadas diretamente da timeline
  */
 export const DevTable = ({ devsToShow, showHeader = true }) => {
   const { dashboardData } = useDashboardData();
@@ -15,9 +16,7 @@ export const DevTable = ({ devsToShow, showHeader = true }) => {
         <thead>
           <tr className="border-b-2 border-gray-300">
             <th className="text-left p-3 font-semibold text-gray-700">Dev</th>
-            <th className="text-left p-3 font-semibold text-gray-700">Semana anterior</th>
-            <th className="text-left p-3 font-semibold text-gray-700 bg-blue-50">Esta semana</th>
-            <th className="text-left p-3 font-semibold text-gray-700">Próxima semana</th>
+            <th className="text-left p-3 font-semibold text-gray-700 bg-blue-50">Tasks atuais</th>
           </tr>
         </thead>
         <tbody>
@@ -37,7 +36,7 @@ export const DevTable = ({ devsToShow, showHeader = true }) => {
     <div className="bg-white rounded-xl shadow-lg p-6">
       <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
         <Users className="w-5 h-5" />
-        Desenvolvedores - Alocação semanal
+        Desenvolvedores
       </h2>
       {content}
     </div>

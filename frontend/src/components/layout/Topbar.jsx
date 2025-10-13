@@ -88,14 +88,8 @@ export const Topbar = () => {
         </BreadcrumbList>
       </Breadcrumb>
 
-      {/* Semana atual */}
-      <div className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">
-        <Calendar className="w-4 h-4" />
-        <span className="hidden sm:inline">{dashboardData.week}</span>
-      </div>
-
       {/* Controles */}
-      <div className="flex items-center gap-2">
+      <div className="ml-auto flex items-center gap-2">
         <Button
           variant="outline"
           size="sm"
@@ -104,46 +98,6 @@ export const Topbar = () => {
         >
           <Download className="w-4 h-4" />
           <span className="hidden md:inline">Exportar</span>
-        </Button>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleImportClick}
-          className="gap-2"
-        >
-          <Upload className="w-4 h-4" />
-          <span className="hidden md:inline">Importar</span>
-        </Button>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json"
-          onChange={handleImportFile}
-          className="hidden"
-        />
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleReset}
-          className="gap-2"
-        >
-          <RotateCcw className="w-4 h-4" />
-          <span className="hidden md:inline">Resetar</span>
-        </Button>
-
-        <Separator orientation="vertical" className="h-8 hidden sm:block" />
-
-        <Button
-          variant={editMode ? 'default' : 'secondary'}
-          size="sm"
-          onClick={toggleEditMode}
-          className="gap-2"
-        >
-          {editMode ? <Save className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
-          {editMode ? 'Salvar' : 'Editar'}
         </Button>
       </div>
     </header>
