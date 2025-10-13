@@ -38,9 +38,9 @@ export const UpcomingWeeksSection = ({ data }) => {
   // Primeiras 3 tarefas para preview
   const previewTasks = plannedTasks.slice(0, 3);
 
-  // Busca info dos devs
-  const getDevInfo = (devName) => {
-    return dashboardData.devs.find(d => d.name === devName);
+  // Busca info dos devs pelo ID
+  const getDevInfo = (devId) => {
+    return dashboardData.devs.find(d => d.id === devId);
   };
 
   // Iniciais do dev para avatar
@@ -119,8 +119,9 @@ export const UpcomingWeeksSection = ({ data }) => {
                     <span className="flex-1 font-medium text-foreground">{task.title}</span>
                     {task.assignedDevs && task.assignedDevs.length > 0 && (
                       <div className="flex -space-x-2">
-                        {task.assignedDevs.slice(0, 2).map((devName, devIdx) => {
-                          const dev = getDevInfo(devName);
+                        {task.assignedDevs.slice(0, 2).map((assignment, devIdx) => {
+                          // Extract dev from relationship object
+                          const dev = assignment.dev || getDevInfo(assignment.devId);
                           if (!dev) return null;
                           return (
                             <Avatar key={devIdx} className="h-6 w-6 border-2 border-white ring-1 ring-border/50">
@@ -181,8 +182,9 @@ export const UpcomingWeeksSection = ({ data }) => {
                       </div>
                       {task.assignedDevs && task.assignedDevs.length > 0 && (
                         <div className="flex -space-x-2">
-                          {task.assignedDevs.slice(0, 3).map((devName, devIdx) => {
-                            const dev = getDevInfo(devName);
+                          {task.assignedDevs.slice(0, 3).map((assignment, devIdx) => {
+                            // Extract dev from relationship object
+                            const dev = assignment.dev || getDevInfo(assignment.devId);
                             if (!dev) return null;
                             return (
                               <Avatar key={devIdx} className="h-7 w-7 border-2 border-white ring-1 ring-border/50">

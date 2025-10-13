@@ -95,7 +95,6 @@ model Highlight {
 // Tarefas da timeline semanal
 model TimelineTask {
   id              String    @id @default(uuid())
-  weekType        String    @map("week_type") // 'current', 'previous', 'upcoming'
   weekStart       DateTime  @map("week_start") // Sempre domingo
   weekEnd         DateTime  @map("week_end")   // Sempre sábado
   title           String
@@ -114,7 +113,8 @@ model TimelineTask {
   highlights      Highlight[]
 
   @@map("timeline_tasks")
-  @@index([weekType])
+  @@index([weekStart])
+  @@index([weekEnd])
   @@index([demandId])
   @@index([status])
 }

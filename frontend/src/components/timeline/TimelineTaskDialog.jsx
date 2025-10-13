@@ -22,7 +22,6 @@ export const TimelineTaskDialog = ({ isOpen, onClose, onSave, task, demandId }) 
   const { dashboardData } = useDashboardData();
   const [formData, setFormData] = useState({
     title: '',
-    weekType: 'current',
     weekStart: '',
     weekEnd: '',
     status: 'nao-iniciada',
@@ -40,7 +39,6 @@ export const TimelineTaskDialog = ({ isOpen, onClose, onSave, task, demandId }) 
       // Edição: preencher com dados da task
       setFormData({
         title: task.title || '',
-        weekType: task.weekType || 'current',
         weekStart: task.weekStart ? task.weekStart.split('T')[0] : '',
         weekEnd: task.weekEnd ? task.weekEnd.split('T')[0] : '',
         status: task.status || 'nao-iniciada',
@@ -59,7 +57,6 @@ export const TimelineTaskDialog = ({ isOpen, onClose, onSave, task, demandId }) 
 
       setFormData({
         title: '',
-        weekType: 'current',
         weekStart: sunday.toISOString().split('T')[0],
         weekEnd: saturday.toISOString().split('T')[0],
         status: 'nao-iniciada',
@@ -88,8 +85,14 @@ export const TimelineTaskDialog = ({ isOpen, onClose, onSave, task, demandId }) 
     const highlights = formData.achievements.map(text => ({ text }));
     const blockers = formData.blockers.map(b => ({ text: b.text, severity: b.severity }));
 
+    // Enviar apenas os campos necessários para o backend
     onSave({
-      ...formData,
+      title: formData.title,
+      weekStart: formData.weekStart,
+      weekEnd: formData.weekEnd,
+      status: formData.status,
+      demandId: formData.demandId,
+      devIds: formData.devIds,
       highlights,
       blockers
     });
@@ -146,7 +149,7 @@ export const TimelineTaskDialog = ({ isOpen, onClose, onSave, task, demandId }) 
         <DialogHeader>
           <DialogTitle>{task ? 'Editar Timeline Task' : 'Nova Timeline Task'}</DialogTitle>
           <DialogDescription>
-            {task ? 'Atualize as informações da task' : 'Crie uma nova task para a timeline'}
+            {task ? 'Atualize as informações da task' : 'Crie uma nova task definindo as datas de início e fim'}
           </DialogDescription>
         </DialogHeader>
 
@@ -162,41 +165,22 @@ export const TimelineTaskDialog = ({ isOpen, onClose, onSave, task, demandId }) 
             />
           </div>
 
-          {/* Tipo de semana e Status */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="weekType">Tipo de Semana *</Label>
-              <Select
-                value={formData.weekType}
-                onValueChange={(value) => setFormData({ ...formData, weekType: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="previous">Semana Anterior</SelectItem>
-                  <SelectItem value="current">Semana Atual</SelectItem>
-                  <SelectItem value="upcoming">Próximas Semanas</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="status">Status *</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value) => setFormData({ ...formData, status: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="nao-iniciada">Não Iniciada</SelectItem>
-                  <SelectItem value="em-andamento">Em Andamento</SelectItem>
-                  <SelectItem value="concluida">Concluída</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Status */}
+          <div className="space-y-2">
+            <Label htmlFor="status">Status *</Label>
+            <Select
+              value={formData.status}
+              onValueChange={(value) => setFormData({ ...formData, status: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="nao-iniciada">Não Iniciada</SelectItem>
+                <SelectItem value="em-andamento">Em Andamento</SelectItem>
+                <SelectItem value="concluida">Concluída</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Datas */}

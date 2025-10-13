@@ -24,7 +24,9 @@ export const CurrentWeekSection = ({ data }) => {
 
   const ongoingCount = tasks.filter(t => t.status === 'em-andamento').length;
   const highPriorityCount = tasks.filter(t => t.priority === 'alta').length;
-  const uniqueDevs = [...new Set(tasks.flatMap(t => t.assignedDevs || []))].length;
+  // Extract dev IDs from assignedDevs relationship objects
+  const allDevIds = tasks.flatMap(t => (t.assignedDevs || []).map(a => a.devId || a.dev?.id)).filter(Boolean);
+  const uniqueDevs = [...new Set(allDevIds)].length;
 
   const sortedTasks = [...tasks].sort((a, b) => {
     const priorityOrder = { 'alta': 0, 'média': 1, 'baixa': 2 };

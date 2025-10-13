@@ -77,25 +77,11 @@ export const DashboardProvider = ({ children }) => {
         return {
           startDate: startDate.toISOString(),
           endDate: endDate.toISOString(),
+          // Keep full task objects with all relationships intact for TaskCard
           tasks: tasks.map(t => ({
-            id: t.id,
-            title: t.title,
-            status: t.status,
-            // Pegar priority da demand associada, se existir
-            priority: t.demand?.priority || 'media',
-            // assignedDevs agora é array de { dev: {...} }
-            assignedDevs: (t.assignedDevs || []).map(a => a.dev.name),
-            // category vem da demand
-            category: t.demand?.category || '',
-            // blockers = highlights do tipo 'entrave'
-            blockers: (t.highlights || [])
-              .filter(h => h.type === 'entrave')
-              .map(h => h.text),
-            // highlights = highlights do tipo 'conquista'
-            highlights: (t.highlights || [])
-              .filter(h => h.type === 'conquista')
-              .map(h => h.text),
-            deadline: t.createdAt // Usando createdAt como referência
+            ...t,
+            // Add computed priority field for sorting/filtering
+            priority: t.demand?.priority || 'media'
           })),
           alerts
         };
@@ -115,14 +101,11 @@ export const DashboardProvider = ({ children }) => {
         return {
           startDate: startDate.toISOString(),
           endDate: endDate.toISOString(),
+          // Keep full task objects with all relationships intact
           plannedTasks: tasks.map(t => ({
-            id: t.id,
-            title: t.title,
-            // Priority vem da demand
+            ...t,
+            // Add computed priority and category fields for easier access
             priority: t.demand?.priority || 'media',
-            // assignedDevs agora é array de { dev: {...} }
-            assignedDevs: (t.assignedDevs || []).map(a => a.dev.name),
-            // category vem da demand
             category: t.demand?.category || ''
           })),
           notes: null

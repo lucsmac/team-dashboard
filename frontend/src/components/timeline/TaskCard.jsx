@@ -1,12 +1,8 @@
-import { Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useDashboardData } from '@/hooks/useDashboardData';
-import { getPriorityColor } from '@/utils/colorUtils';
-import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 
 /**
  * Card de tarefa na timeline com prioridade, progresso e devs
@@ -14,41 +10,22 @@ import { ptBR } from 'date-fns/locale';
 export const TaskCard = ({ task }) => {
   const { dashboardData } = useDashboardData();
 
-  // Calcula cor do progress bar baseado no progresso
-  const getProgressColor = (progress) => {
-    if (progress >= 70) return 'bg-green-500';
-    if (progress >= 40) return 'bg-yellow-500';
-    return 'bg-red-500';
-  };
+  console.log('TaskCard - task completa:', task);
 
-  // Formata deadline relativo
-  const getDeadlineText = (deadline) => {
-    if (!deadline) return null;
-    try {
-      const deadlineDate = new Date(deadline);
-      const now = new Date();
-      const isOverdue = deadlineDate < now;
-      const distance = formatDistanceToNow(deadlineDate, {
-        addSuffix: true,
-        locale: ptBR
-      });
+  // Busca info dos devs - assignedDevs é um array de { dev: Dev, devId: number } do backend
+  let devInfos = [];
 
-      return {
-        text: distance,
-        isOverdue,
-        isSoon: !isOverdue && deadlineDate - now < 24 * 60 * 60 * 1000 // menos de 24h
-      };
-    } catch (e) {
-      return null;
-    }
-  };
+  if (task.assignedDevs && task.assignedDevs.length > 0) {
+    // Se tiver o relacionamento completo com dev
+    devInfos = task.assignedDevs.map(assignment => assignment.dev).filter(Boolean);
+  } else if (task.assignedDevs && task.assignedDevs.length > 0) {
+    // Fallback: se só tiver os IDs, busca dos devs do dashboard
+    const devIds = task.assignedDevs.map(a => a.devId || a);
+    devInfos = dashboardData.devs?.filter(dev => devIds.includes(dev.id)) || [];
+  }
 
-  const deadlineInfo = getDeadlineText(task.deadline);
-
-  // Busca info dos devs - assignedDevs é um array de { dev: Dev } do backend
-  const devInfos = task.assignedDevs
-    ? task.assignedDevs.map(assignment => assignment.dev).filter(Boolean)
-    : [];
+  console.log('TaskCard - devInfos processado:', devInfos);
+  console.log('TaskCard - demand:', task.demand);
 
   // Iniciais do dev para avatar
   const getInitials = (name) => {
@@ -60,16 +37,10 @@ export const TaskCard = ({ task }) => {
       .slice(0, 2);
   };
 
-  const priorityColors = {
-    'alta': 'bg-red-500',
-    'média': 'bg-yellow-500',
-    'baixa': 'bg-green-500'
-  };
-
   const priorityLabels = {
-    'alta': '🔴 Alta',
-    'média': '🟡 Média',
-    'baixa': '🟢 Baixa'
+    'alta': '☝️ Alta',
+    'media': '👌 Média',
+    'baixa': '🤙 Baixa'
   };
 
   // Filtra highlights por tipo (vindo da relação com Highlight)
@@ -79,26 +50,63 @@ export const TaskCard = ({ task }) => {
   return (
     <Card className="group hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border border-border/50 bg-white/80 backdrop-blur-sm rounded-xl overflow-hidden">
       <CardContent className="p-5 space-y-4">
-        {/* Header com título e prioridade */}
-        <div className="flex items-start justify-between gap-3">
-          <h4 className="font-semibold text-base flex-1 group-hover:text-primary transition-colors">{task.title}</h4>
-          {task.demand?.priority && (
-            <Badge
-              variant={task.demand.priority === 'alta' ? 'destructive' : 'secondary'}
-              className="text-xs rounded-full px-3 py-1 font-medium"
-            >
-              {priorityLabels[task.demand.priority]}
-            </Badge>
-          )}
+        {/* Header com título e badges */}
+        <div className="space-y-2">
+          <div className="space-y-1.5">
+            {task.demand?.title && (
+              <p className="text-xs font-semibold text-primary uppercase tracking-wide">
+                📋 {task.demand.title}
+              </p>
+            )}
+            <h4 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors leading-tight">
+              {task.title}
+            </h4>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Status Badge */}
+            {task.status && (
+              <Badge
+                variant={
+                  task.status === 'concluida' ? 'outline' :
+                    task.status === 'em-andamento' ? 'default' :
+                      'secondary'
+                }
+                className="text-xs rounded-full px-3 py-1 font-medium"
+              >
+                {task.status === 'nao-iniciada' ? '⏸️ Não iniciada' :
+                  task.status === 'em-andamento' ? '▶️ Em andamento' :
+                    '✅ Concluída'}
+              </Badge>
+            )}
+            {/* Priority Badge */}
+            {task.demand?.priority && (
+              <Badge
+                variant={task.demand.priority === 'alta' ? 'destructive' : 'secondary'}
+                className="text-xs rounded-full px-3 py-1 font-medium"
+              >
+                {priorityLabels[task.demand.priority]}
+              </Badge>
+            )}
+            {/* Category Badge */}
+            {task.demand?.category ? (
+              <Badge variant="outline" className="text-xs rounded-full font-medium">
+                📁 {task.demand.category}
+              </Badge>
+            ) : task.demandId ? (
+              <Badge variant="outline" className="text-xs rounded-full font-medium text-muted-foreground">
+                📁 Demanda associada
+              </Badge>
+            ) : null}
+          </div>
         </div>
 
         {/* Devs alocados */}
-        {devInfos.length > 0 && (
+        {devInfos.length > 0 ? (
           <div className="flex items-center gap-3">
             <div className="flex -space-x-3">
               {devInfos.slice(0, 3).map((dev) => (
                 <Avatar key={dev.id} className="h-8 w-8 border-2 border-white ring-1 ring-border/50 transition-transform hover:scale-110 hover:z-10">
-                  <AvatarFallback className={`text-xs font-semibold ${dev.color}`}>
+                  <AvatarFallback className={`text-xs font-semibold ${dev.color || 'bg-blue-500 text-white'}`}>
                     {getInitials(dev.name)}
                   </AvatarFallback>
                 </Avatar>
@@ -111,24 +119,17 @@ export const TaskCard = ({ task }) => {
                 </Avatar>
               )}
             </div>
-            <span className="text-xs text-muted-foreground font-medium">
-              {devInfos.length === 1 ? devInfos[0].name : `${devInfos.length} devs`}
-            </span>
+            <div className="text-xs font-medium">
+              {devInfos.length === 1 ? (
+                <span className="text-foreground">{devInfos[0].name}</span>
+              ) : (
+                <span className="text-muted-foreground">{devInfos.length} devs alocados</span>
+              )}
+            </div>
           </div>
-        )}
-
-        {/* Deadline */}
-        {deadlineInfo && (
-          <div className={`flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg ${
-            deadlineInfo.isOverdue
-              ? 'text-red-700 bg-red-50 border border-red-200'
-              : deadlineInfo.isSoon
-                ? 'text-amber-700 bg-amber-50 border border-amber-200'
-                : 'text-muted-foreground bg-secondary/50'
-          }`}>
-            <Clock className="h-3.5 w-3.5" />
-            <span>{deadlineInfo.text}</span>
-            {deadlineInfo.isSoon && <span className="font-semibold">(urgente!)</span>}
+        ) : (
+          <div className="text-xs text-muted-foreground italic">
+            👤 Nenhum dev alocado
           </div>
         )}
 
@@ -146,13 +147,6 @@ export const TaskCard = ({ task }) => {
             <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
             <span className="font-medium">{achievements[0].text}</span>
           </div>
-        )}
-
-        {/* Badge de categoria */}
-        {task.demand?.category && (
-          <Badge variant="outline" className="text-xs rounded-full font-medium">
-            {task.demand.category}
-          </Badge>
         )}
       </CardContent>
     </Card>

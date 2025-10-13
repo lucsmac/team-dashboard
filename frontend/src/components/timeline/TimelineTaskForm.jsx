@@ -24,7 +24,6 @@ import { useDashboardData } from '@/hooks/useDashboardData';
 export default function TimelineTaskForm({ task, isOpen, onClose, onSave }) {
   const { dashboardData } = useDashboardData();
   const [formData, setFormData] = useState({
-    weekType: 'current',
     weekStart: '',
     weekEnd: '',
     title: '',
@@ -43,7 +42,6 @@ export default function TimelineTaskForm({ task, isOpen, onClose, onSave }) {
     if (task) {
       // Modo edição - preencher com dados da task
       setFormData({
-        weekType: task.weekType || 'current',
         weekStart: task.weekStart ? new Date(task.weekStart).toISOString().split('T')[0] : '',
         weekEnd: task.weekEnd ? new Date(task.weekEnd).toISOString().split('T')[0] : '',
         title: task.title || '',
@@ -67,7 +65,6 @@ export default function TimelineTaskForm({ task, isOpen, onClose, onSave }) {
       saturday.setDate(sunday.getDate() + 6);
 
       setFormData({
-        weekType: 'current',
         weekStart: sunday.toISOString().split('T')[0],
         weekEnd: saturday.toISOString().split('T')[0],
         title: '',
@@ -89,7 +86,6 @@ export default function TimelineTaskForm({ task, isOpen, onClose, onSave }) {
     try {
       // Preparar dados para enviar
       const payload = {
-        weekType: formData.weekType,
         weekStart: formData.weekStart,
         weekEnd: formData.weekEnd,
         title: formData.title,
@@ -162,7 +158,7 @@ export default function TimelineTaskForm({ task, isOpen, onClose, onSave }) {
         <DialogHeader>
           <DialogTitle>{task ? 'Editar Task da Timeline' : 'Nova Task da Timeline'}</DialogTitle>
           <DialogDescription>
-            {task ? 'Atualize as informações da task.' : 'Crie uma nova task para a timeline semanal.'}
+            {task ? 'Atualize as informações da task.' : 'Crie uma nova task definindo as datas de início e fim.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -173,46 +169,34 @@ export default function TimelineTaskForm({ task, isOpen, onClose, onSave }) {
             </div>
           )}
 
-          {/* Tipo de semana e datas (readonly - calculado automaticamente) */}
-          <div className="grid grid-cols-3 gap-4">
+          {/* Datas da semana */}
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="weekType">Tipo de Semana *</Label>
-              <Select
-                value={formData.weekType}
-                onValueChange={(value) => handleChange('weekType', value)}
-                required
-              >
-                <SelectTrigger id="weekType">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="previous">Anterior</SelectItem>
-                  <SelectItem value="current">Atual</SelectItem>
-                  <SelectItem value="upcoming">Próxima</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="weekStart">Início (Domingo)</Label>
+              <Label htmlFor="weekStart">Data de Início *</Label>
               <Input
                 id="weekStart"
                 type="date"
                 value={formData.weekStart}
-                readOnly
-                className="bg-muted"
+                onChange={(e) => handleChange('weekStart', e.target.value)}
+                required
               />
+              <p className="text-xs text-muted-foreground">
+                Início da semana de trabalho
+              </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="weekEnd">Fim (Sábado)</Label>
+              <Label htmlFor="weekEnd">Data de Fim *</Label>
               <Input
                 id="weekEnd"
                 type="date"
                 value={formData.weekEnd}
-                readOnly
-                className="bg-muted"
+                onChange={(e) => handleChange('weekEnd', e.target.value)}
+                required
               />
+              <p className="text-xs text-muted-foreground">
+                Fim da semana de trabalho
+              </p>
             </div>
           </div>
 
@@ -278,9 +262,6 @@ export default function TimelineTaskForm({ task, isOpen, onClose, onSave }) {
                 Limpar seleção
               </Button>
             )}
-            <p className="text-xs text-muted-foreground">
-              A categoria e prioridade serão herdadas da demanda selecionada
-            </p>
           </div>
 
           {/* Devs Alocados */}

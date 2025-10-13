@@ -1,7 +1,48 @@
 import { prisma } from '../server.js';
 
+// Função auxiliar para obter o domingo da semana atual
+function getCurrentWeekStart() {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const sunday = new Date(today);
+  sunday.setDate(today.getDate() - dayOfWeek);
+  sunday.setHours(0, 0, 0, 0);
+  return sunday;
+}
+
+// Função auxiliar para obter o sábado da semana atual
+function getCurrentWeekEnd() {
+  const sunday = getCurrentWeekStart();
+  const saturday = new Date(sunday);
+  saturday.setDate(sunday.getDate() + 6);
+  saturday.setHours(23, 59, 59, 999);
+  return saturday;
+}
+
+// Função para determinar o tipo de semana baseado nas datas
+function getWeekType(weekStart, weekEnd) {
+  const currentWeekStart = getCurrentWeekStart();
+  const currentWeekEnd = getCurrentWeekEnd();
+
+  const taskStart = new Date(weekStart);
+  const taskEnd = new Date(weekEnd);
+
+  // Se a task termina antes da semana atual começar
+  if (taskEnd < currentWeekStart) {
+    return 'previous';
+  }
+
+  // Se a task começa depois da semana atual terminar
+  if (taskStart > currentWeekEnd) {
+    return 'upcoming';
+  }
+
+  // Caso contrário, é da semana atual
+  return 'current';
+}
+
 export const timelineController = {
-  // GET /api/timeline - Listar todas as tarefas (organizadas por weekType)
+  // GET /api/timeline - Listar todas as tarefas (organizadas por weekType calculado)
   async getAll(req, res, next) {
     try {
       const tasks = await prisma.timelineTask.findMany({
@@ -19,11 +60,17 @@ export const timelineController = {
         ]
       });
 
-      // Organizar por weekType
+      // Calcular weekType para cada task baseado nas datas
+      const tasksWithWeekType = tasks.map(task => ({
+        ...task,
+        weekType: getWeekType(task.weekStart, task.weekEnd)
+      }));
+
+      // Organizar por weekType calculado
       const byWeekType = {
-        current: tasks.filter(t => t.weekType === 'current'),
-        previous: tasks.filter(t => t.weekType === 'previous'),
-        upcoming: tasks.filter(t => t.weekType === 'upcoming')
+        previous: tasksWithWeekType.filter(t => t.weekType === 'previous'),
+        current: tasksWithWeekType.filter(t => t.weekType === 'current'),
+        upcoming: tasksWithWeekType.filter(t => t.weekType === 'upcoming')
       };
 
       res.json(byWeekType);
@@ -53,18 +100,25 @@ export const timelineController = {
         return res.status(404).json({ error: 'Timeline task not found' });
       }
 
-      res.json(task);
+      // Adicionar weekType calculado
+      const taskWithWeekType = {
+        ...task,
+        weekType: getWeekType(task.weekStart, task.weekEnd)
+      };
+
+      res.json(taskWithWeekType);
     } catch (error) {
       next(error);
     }
   },
 
-  // GET /api/timeline/week/:weekType - Buscar tarefas por tipo de semana
+  // GET /api/timeline/week/:weekType - Buscar tarefas por tipo de semana (calculado)
   async getByWeekType(req, res, next) {
     try {
       const { weekType } = req.params;
-      const tasks = await prisma.timelineTask.findMany({
-        where: { weekType },
+
+      // Buscar todas as tasks e filtrar por weekType calculado
+      const allTasks = await prisma.timelineTask.findMany({
         include: {
           demand: true,
           assignedDevs: {
@@ -77,6 +131,14 @@ export const timelineController = {
         orderBy: { weekStart: 'desc' }
       });
 
+      // Filtrar tasks pelo weekType calculado
+      const tasks = allTasks
+        .map(task => ({
+          ...task,
+          weekType: getWeekType(task.weekStart, task.weekEnd)
+        }))
+        .filter(task => task.weekType === weekType);
+
       res.json(tasks);
     } catch (error) {
       next(error);
@@ -87,7 +149,6 @@ export const timelineController = {
   async create(req, res, next) {
     try {
       const {
-        weekType,
         weekStart,
         weekEnd,
         title,
@@ -98,16 +159,15 @@ export const timelineController = {
         blockers        // Array de { text: '...', severity: 'alta' }
       } = req.body;
 
-      if (!weekType || !weekStart || !weekEnd || !title) {
+      if (!weekStart || !weekEnd || !title) {
         return res.status(400).json({
-          error: 'weekType, weekStart, weekEnd, and title are required'
+          error: 'weekStart, weekEnd, and title are required'
         });
       }
 
       // Criar a timeline task
       const task = await prisma.timelineTask.create({
         data: {
-          weekType,
           weekStart: new Date(weekStart),
           weekEnd: new Date(weekEnd),
           title,
@@ -175,7 +235,13 @@ export const timelineController = {
         }
       });
 
-      res.status(201).json(fullTask);
+      // Adicionar weekType calculado
+      const taskWithWeekType = {
+        ...fullTask,
+        weekType: getWeekType(fullTask.weekStart, fullTask.weekEnd)
+      };
+
+      res.status(201).json(taskWithWeekType);
     } catch (error) {
       next(error);
     }
@@ -186,7 +252,6 @@ export const timelineController = {
     try {
       const { id } = req.params;
       const {
-        weekType,
         weekStart,
         weekEnd,
         title,
@@ -199,7 +264,6 @@ export const timelineController = {
 
       // Atualizar a timeline task
       const updateData = {
-        weekType,
         title,
         status,
         demandId
@@ -302,7 +366,13 @@ export const timelineController = {
         }
       });
 
-      res.json(fullTask);
+      // Adicionar weekType calculado
+      const taskWithWeekType = {
+        ...fullTask,
+        weekType: getWeekType(fullTask.weekStart, fullTask.weekEnd)
+      };
+
+      res.json(taskWithWeekType);
     } catch (error) {
       next(error);
     }
