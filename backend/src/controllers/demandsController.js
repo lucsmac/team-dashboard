@@ -64,11 +64,11 @@ export const demandsController = {
   // POST /api/demands - Criar nova demanda
   async create(req, res, next) {
     try {
-      const { category, title, status, priority, assignedDevs, value, details, links } = req.body;
+      const { category, title, status, priority, stage, assignedDevs, value, details, links } = req.body;
 
-      if (!category || !title || !status || !priority) {
+      if (!category || !title || !status || !priority || !stage) {
         return res.status(400).json({
-          error: 'Category, title, status, and priority are required'
+          error: 'Category, title, status, priority, and stage are required'
         });
       }
 
@@ -78,6 +78,7 @@ export const demandsController = {
           title,
           status,
           priority,
+          stage,
           assignedDevs: assignedDevs || [],
           value,
           details,
@@ -95,11 +96,11 @@ export const demandsController = {
   async update(req, res, next) {
     try {
       const { id } = req.params;
-      const { category, title, status, priority, assignedDevs, value, details, links } = req.body;
+      const { category, title, status, priority, stage, assignedDevs, value, details, links } = req.body;
 
       const demand = await prisma.demand.update({
         where: { id },
-        data: { category, title, status, priority, assignedDevs, value, details, links }
+        data: { category, title, status, priority, stage, assignedDevs, value, details, links }
       });
 
       res.json(demand);

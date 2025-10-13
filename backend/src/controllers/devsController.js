@@ -84,14 +84,14 @@ export const devsController = {
   // POST /api/devs - Criar novo desenvolvedor
   async create(req, res, next) {
     try {
-      const { name, color, lastWeek, thisWeek, nextWeek } = req.body;
+      const { name, color, role, seniority, lastWeek, thisWeek, nextWeek } = req.body;
 
-      if (!name || !color) {
-        return res.status(400).json({ error: 'Name and color are required' });
+      if (!name || !color || !role || !seniority) {
+        return res.status(400).json({ error: 'Name, color, role and seniority are required' });
       }
 
       const dev = await prisma.dev.create({
-        data: { name, color, lastWeek, thisWeek, nextWeek }
+        data: { name, color, role, seniority, lastWeek, thisWeek, nextWeek }
       });
 
       res.status(201).json(dev);
@@ -104,11 +104,11 @@ export const devsController = {
   async update(req, res, next) {
     try {
       const { id } = req.params;
-      const { name, color, lastWeek, thisWeek, nextWeek } = req.body;
+      const { name, color, role, seniority, lastWeek, thisWeek, nextWeek } = req.body;
 
       const dev = await prisma.dev.update({
         where: { id: parseInt(id) },
-        data: { name, color, lastWeek, thisWeek, nextWeek }
+        data: { name, color, role, seniority, lastWeek, thisWeek, nextWeek }
       });
 
       res.json(dev);

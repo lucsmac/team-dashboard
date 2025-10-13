@@ -3,35 +3,39 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { TaskCard } from './TaskCard';
+import { EmptyTaskPlaceholder } from './EmptyTaskPlaceholder';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-/**
- * Seção da semana atual - DESTAQUE PRINCIPAL da timeline
- */
 export const CurrentWeekSection = ({ data }) => {
-  const { startDate, endDate, tasks, alerts } = data;
+  const { startDate, endDate, tasks = [], alerts = [] } = data || {};
 
-  // Formata período
-  const periodText = `${format(new Date(startDate), 'd MMM', { locale: ptBR })} - ${format(new Date(endDate), 'd MMM', { locale: ptBR })}`;
+  // Usar datas padrão se não fornecidas (semana atual)
+  const now = new Date();
+  const sunday = new Date(now);
+  sunday.setDate(now.getDate() - now.getDay());
+  const saturday = new Date(sunday);
+  saturday.setDate(sunday.getDate() + 6);
 
-  // Contadores
+  const effectiveStartDate = startDate || sunday.toISOString();
+  const effectiveEndDate = endDate || saturday.toISOString();
+
+  const periodText = `${format(new Date(effectiveStartDate), 'd MMM', { locale: ptBR })} - ${format(new Date(effectiveEndDate), 'd MMM', { locale: ptBR })}`;
+
   const ongoingCount = tasks.filter(t => t.status === 'em-andamento').length;
   const highPriorityCount = tasks.filter(t => t.priority === 'alta').length;
-  const uniqueDevs = [...new Set(tasks.flatMap(t => t.assignedDevs))].length;
+  const uniqueDevs = [...new Set(tasks.flatMap(t => t.assignedDevs || []))].length;
 
-  // Ordena tasks por prioridade (alta primeiro) e depois por progresso (menor primeiro)
   const sortedTasks = [...tasks].sort((a, b) => {
     const priorityOrder = { 'alta': 0, 'média': 1, 'baixa': 2 };
     if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
       return priorityOrder[a.priority] - priorityOrder[b.priority];
     }
-    return a.progress - b.progress; // Menor progresso primeiro (mais urgente)
+    return a.progress - b.progress;
   });
 
   return (
     <Card className="relative border-2 shadow-xl rounded-xl overflow-hidden">
-      {/* Accent top border - neutro */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-foreground" />
 
       <CardHeader className="pb-5 pt-6">
@@ -42,7 +46,7 @@ export const CurrentWeekSection = ({ data }) => {
                 <Zap className="h-5 w-5 text-background" />
               </div>
               <span className="text-foreground">
-                Semana Atual
+                Semana atual
               </span>
             </CardTitle>
             <div className="flex items-center gap-2 text-sm text-muted-foreground ml-14">
@@ -57,7 +61,6 @@ export const CurrentWeekSection = ({ data }) => {
       </CardHeader>
 
       <CardContent className="space-y-6">
-        {/* Estatísticas rápidas - neutro */}
         <div className="flex items-center justify-between gap-4 p-4 bg-muted/30 rounded-xl border">
           <div className="flex items-center gap-3 flex-1">
             <div className="p-3 bg-muted rounded-lg">
@@ -65,7 +68,7 @@ export const CurrentWeekSection = ({ data }) => {
             </div>
             <div>
               <div className="text-2xl font-bold text-foreground">{ongoingCount}</div>
-              <div className="text-xs text-muted-foreground font-medium">Em Andamento</div>
+              <div className="text-xs text-muted-foreground font-medium">Em andamento</div>
             </div>
           </div>
           <div className="h-10 w-px bg-border" />
@@ -75,7 +78,7 @@ export const CurrentWeekSection = ({ data }) => {
             </div>
             <div>
               <div className="text-2xl font-bold text-red-700">{highPriorityCount}</div>
-              <div className="text-xs text-muted-foreground font-medium">Alta Prioridade</div>
+              <div className="text-xs text-muted-foreground font-medium">Alta prioridade</div>
             </div>
           </div>
           <div className="h-10 w-px bg-border" />
@@ -85,19 +88,18 @@ export const CurrentWeekSection = ({ data }) => {
             </div>
             <div>
               <div className="text-2xl font-bold text-foreground">{uniqueDevs}</div>
-              <div className="text-xs text-muted-foreground font-medium">Devs Ativos</div>
+              <div className="text-xs text-muted-foreground font-medium">Devs focados</div>
             </div>
           </div>
         </div>
 
-        {/* Alertas críticos - mantém cores de severidade */}
         {alerts && alerts.length > 0 && (
           <div className="space-y-3">
             <h4 className="text-sm font-bold flex items-center gap-2 text-foreground">
               <div className="p-1.5 bg-red-100 rounded-lg">
                 <AlertTriangle className="h-4 w-4 text-red-600" />
               </div>
-              Alertas da Semana
+              Alertas da semana
             </h4>
             <div className="space-y-2">
               {alerts.map((alert, idx) => (
@@ -115,16 +117,16 @@ export const CurrentWeekSection = ({ data }) => {
           </div>
         )}
 
-        {/* Prioridades da semana */}
         <div className="space-y-4">
           <h4 className="text-sm font-bold flex items-center gap-2 text-foreground">
             <span className="text-lg">🎯</span>
-            Prioridades da Semana
+            Prioridades da semana
           </h4>
           {sortedTasks.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8 bg-secondary/30 rounded-xl">
-              Nenhuma tarefa em andamento
-            </p>
+            <EmptyTaskPlaceholder
+              count={3}
+              message="Nenhuma tarefa em andamento"
+            />
           ) : (
             <div className="space-y-4">
               {sortedTasks.map((task) => (
@@ -134,13 +136,12 @@ export const CurrentWeekSection = ({ data }) => {
           )}
         </div>
 
-        {/* Resumo de alocação - neutro */}
         <div className="bg-muted/30 p-5 rounded-lg border">
           <h4 className="text-sm font-bold flex items-center gap-2 text-foreground mb-4">
             <div className="p-1.5 bg-muted rounded-lg">
               <Users className="h-4 w-4 text-foreground" />
             </div>
-            Resumo de Alocação
+            Resumo de alocação
           </h4>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="flex items-center gap-2">

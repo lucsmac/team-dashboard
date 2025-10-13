@@ -158,7 +158,7 @@ export const initialData = {
         links: ['https://confluence.example.com/gcld']
       }
     ],
-    'Projetos Especiais': [
+    'Genius': [
       {
         id: 'd6',
         title: 'Service Desk + Projetos especiais',

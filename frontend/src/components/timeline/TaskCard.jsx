@@ -45,10 +45,10 @@ export const TaskCard = ({ task }) => {
 
   const deadlineInfo = getDeadlineText(task.deadline);
 
-  // Busca info dos devs
+  // Busca info dos devs - assignedDevs é um array de { dev: Dev } do backend
   const devInfos = task.assignedDevs
-    .map(devName => dashboardData.devs.find(d => d.name === devName))
-    .filter(Boolean);
+    ? task.assignedDevs.map(assignment => assignment.dev).filter(Boolean)
+    : [];
 
   // Iniciais do dev para avatar
   const getInitials = (name) => {
@@ -72,38 +72,24 @@ export const TaskCard = ({ task }) => {
     'baixa': '🟢 Baixa'
   };
 
+  // Filtra highlights por tipo (vindo da relação com Highlight)
+  const blockers = task.highlights?.filter(h => h.type === 'entrave') || [];
+  const achievements = task.highlights?.filter(h => h.type === 'conquista') || [];
+
   return (
     <Card className="group hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border border-border/50 bg-white/80 backdrop-blur-sm rounded-xl overflow-hidden">
       <CardContent className="p-5 space-y-4">
         {/* Header com título e prioridade */}
         <div className="flex items-start justify-between gap-3">
           <h4 className="font-semibold text-base flex-1 group-hover:text-primary transition-colors">{task.title}</h4>
-          <Badge
-            variant={task.priority === 'alta' ? 'destructive' : 'secondary'}
-            className="text-xs rounded-full px-3 py-1 font-medium"
-          >
-            {priorityLabels[task.priority]}
-          </Badge>
-        </div>
-
-        {/* Progress bar - tons pastéis sem gradiente */}
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground font-medium">Progresso</span>
-            <span className="font-semibold text-foreground">{task.progress}%</span>
-          </div>
-          <div className="relative w-full bg-secondary/30 rounded-full h-2.5 overflow-hidden">
-            <div
-              className={`h-2.5 rounded-full transition-all duration-500 ${
-                task.progress >= 70
-                  ? 'bg-green-300'
-                  : task.progress >= 40
-                    ? 'bg-yellow-300'
-                    : 'bg-red-300'
-              }`}
-              style={{ width: `${task.progress}%` }}
-            />
-          </div>
+          {task.demand?.priority && (
+            <Badge
+              variant={task.demand.priority === 'alta' ? 'destructive' : 'secondary'}
+              className="text-xs rounded-full px-3 py-1 font-medium"
+            >
+              {priorityLabels[task.demand.priority]}
+            </Badge>
+          )}
         </div>
 
         {/* Devs alocados */}
@@ -147,25 +133,27 @@ export const TaskCard = ({ task }) => {
         )}
 
         {/* Blockers - pastel sem gradiente */}
-        {task.blockers && task.blockers.length > 0 && (
+        {blockers.length > 0 && (
           <div className="flex items-start gap-2 text-xs text-red-700 bg-red-50 p-3 rounded-lg border border-red-200">
             <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-            <span className="font-medium">{task.blockers[0]}</span>
+            <span className="font-medium">{blockers[0].text}</span>
           </div>
         )}
 
         {/* Highlights principais - pastel sem gradiente */}
-        {task.highlights && task.highlights.length > 0 && (
+        {achievements.length > 0 && (
           <div className="flex items-start gap-2 text-xs text-blue-700 bg-blue-50 p-3 rounded-lg border border-blue-200">
             <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
-            <span className="font-medium">{task.highlights[0]}</span>
+            <span className="font-medium">{achievements[0].text}</span>
           </div>
         )}
 
         {/* Badge de categoria */}
-        <Badge variant="outline" className="text-xs rounded-full font-medium">
-          {task.category}
-        </Badge>
+        {task.demand?.category && (
+          <Badge variant="outline" className="text-xs rounded-full font-medium">
+            {task.demand.category}
+          </Badge>
+        )}
       </CardContent>
     </Card>
   );

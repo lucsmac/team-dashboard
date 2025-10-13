@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -18,51 +18,64 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import {
-  DELIVERY_STAGES,
-  WEEK_TYPES,
-  DELIVERY_STAGE_LABELS,
-  WEEK_TYPE_LABELS
-} from '@/utils/enums';
+import { X } from 'lucide-react';
 import { useDashboardData } from '@/hooks/useDashboardData';
 
 export default function TimelineTaskForm({ task, isOpen, onClose, onSave }) {
   const { dashboardData } = useDashboardData();
   const [formData, setFormData] = useState({
-    title: '',
-    weekType: '',
+    weekType: 'current',
     weekStart: '',
-    assignedDevs: [],
-    progress: 0,
-    deliveryStage: '',
-    demandId: null,
-    deadline: ''
+    weekEnd: '',
+    title: '',
+    status: 'nao-iniciada',
+    devIds: [],
+    demandId: '',
+    highlights: [],
+    blockers: []
   });
+  const [currentHighlight, setCurrentHighlight] = useState('');
+  const [currentBlocker, setCurrentBlocker] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     if (task) {
+      // Modo edição - preencher com dados da task
       setFormData({
+        weekType: task.weekType || 'current',
+        weekStart: task.weekStart ? new Date(task.weekStart).toISOString().split('T')[0] : '',
+        weekEnd: task.weekEnd ? new Date(task.weekEnd).toISOString().split('T')[0] : '',
         title: task.title || '',
-        weekType: task.weekType || '',
-        weekStart: task.weekStart || '',
-        assignedDevs: task.assignedDevs || [],
-        progress: task.progress || 0,
-        deliveryStage: task.deliveryStage || '',
-        demandId: task.demandId || null,
-        deadline: task.deadline || ''
+        status: task.status || 'nao-iniciada',
+        devIds: task.assignedDevs?.map(a => a.dev.id) || [],
+        demandId: task.demandId || '',
+        highlights: task.highlights?.filter(h => h.type === 'conquista').map(h => ({ text: h.text })) || [],
+        blockers: task.highlights?.filter(h => h.type === 'entrave').map(h => ({ text: h.text, severity: h.severity })) || []
       });
     } else {
+      // Modo criação - calcular semana atual (domingo a sábado)
+      const today = new Date();
+      const dayOfWeek = today.getDay(); // 0 = domingo, 6 = sábado
+
+      // Calcular domingo da semana atual
+      const sunday = new Date(today);
+      sunday.setDate(today.getDate() - dayOfWeek);
+
+      // Calcular sábado da semana atual
+      const saturday = new Date(sunday);
+      saturday.setDate(sunday.getDate() + 6);
+
       setFormData({
+        weekType: 'current',
+        weekStart: sunday.toISOString().split('T')[0],
+        weekEnd: saturday.toISOString().split('T')[0],
         title: '',
-        weekType: WEEK_TYPES.CURRENT,
-        weekStart: new Date().toISOString().split('T')[0],
-        assignedDevs: [],
-        progress: 0,
-        deliveryStage: DELIVERY_STAGES.DEV,
-        demandId: null,
-        deadline: ''
+        status: 'nao-iniciada',
+        devIds: [],
+        demandId: '',
+        highlights: [],
+        blockers: []
       });
     }
     setError(null);
@@ -74,16 +87,23 @@ export default function TimelineTaskForm({ task, isOpen, onClose, onSave }) {
     setError(null);
 
     try {
-      // Convert empty string to null for demandId
-      const dataToSave = {
-        ...formData,
-        demandId: formData.demandId === '' ? null : formData.demandId,
-        progress: parseInt(formData.progress, 10)
+      // Preparar dados para enviar
+      const payload = {
+        weekType: formData.weekType,
+        weekStart: formData.weekStart,
+        weekEnd: formData.weekEnd,
+        title: formData.title,
+        status: formData.status,
+        demandId: formData.demandId || null,
+        devIds: formData.devIds,
+        highlights: formData.highlights,
+        blockers: formData.blockers
       };
-      await onSave(dataToSave);
+
+      await onSave(payload);
       onClose();
     } catch (err) {
-      setError(err.message || 'Erro ao salvar timeline task');
+      setError(err.message || 'Erro ao salvar');
     } finally {
       setLoading(false);
     }
@@ -93,42 +113,56 @@ export default function TimelineTaskForm({ task, isOpen, onClose, onSave }) {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const toggleDev = (devName) => {
+  const addHighlight = () => {
+    if (currentHighlight.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        highlights: [...prev.highlights, { text: currentHighlight.trim() }]
+      }));
+      setCurrentHighlight('');
+    }
+  };
+
+  const removeHighlight = (index) => {
     setFormData(prev => ({
       ...prev,
-      assignedDevs: prev.assignedDevs.includes(devName)
-        ? prev.assignedDevs.filter(d => d !== devName)
-        : [...prev.assignedDevs, devName]
+      highlights: prev.highlights.filter((_, i) => i !== index)
     }));
   };
 
-  const devs = dashboardData?.devs || [];
-  const demands = getAllDemands();
+  const addBlocker = () => {
+    if (currentBlocker.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        blockers: [...prev.blockers, { text: currentBlocker.trim(), severity: 'alta' }]
+      }));
+      setCurrentBlocker('');
+    }
+  };
 
-  function getAllDemands() {
-    if (!dashboardData?.demands) return [];
-    const allDemands = [];
-    Object.entries(dashboardData.demands).forEach(([category, categoryDemands]) => {
-      if (Array.isArray(categoryDemands)) {
-        allDemands.push(...categoryDemands.map(d => ({ ...d, category })));
-      }
-    });
-    return allDemands;
-  }
+  const removeBlocker = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      blockers: prev.blockers.filter((_, i) => i !== index)
+    }));
+  };
 
-  const selectedDemand = demands.find(d => d.id === formData.demandId);
+  const toggleDev = (devId) => {
+    setFormData(prev => ({
+      ...prev,
+      devIds: prev.devIds.includes(devId)
+        ? prev.devIds.filter(id => id !== devId)
+        : [...prev.devIds, devId]
+    }));
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {task ? 'Editar Timeline Task' : 'Nova Timeline Task'}
-          </DialogTitle>
+          <DialogTitle>{task ? 'Editar Task da Timeline' : 'Nova Task da Timeline'}</DialogTitle>
           <DialogDescription>
-            {task
-              ? 'Atualize as informações da timeline task.'
-              : 'Adicione uma nova task à timeline.'}
+            {task ? 'Atualize as informações da task.' : 'Crie uma nova task para a timeline semanal.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -139,18 +173,8 @@ export default function TimelineTaskForm({ task, isOpen, onClose, onSave }) {
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="title">Título *</Label>
-            <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) => handleChange('title', e.target.value)}
-              placeholder="Ex: Implementar autenticação"
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+          {/* Tipo de semana e datas (readonly - calculado automaticamente) */}
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="weekType">Tipo de Semana *</Label>
               <Select
@@ -159,142 +183,186 @@ export default function TimelineTaskForm({ task, isOpen, onClose, onSave }) {
                 required
               >
                 <SelectTrigger id="weekType">
-                  <SelectValue placeholder="Selecione o tipo" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.values(WEEK_TYPES).map(type => (
-                    <SelectItem key={type} value={type}>
-                      {WEEK_TYPE_LABELS[type]}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="previous">Anterior</SelectItem>
+                  <SelectItem value="current">Atual</SelectItem>
+                  <SelectItem value="upcoming">Próxima</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="weekStart">Data de Início *</Label>
+              <Label htmlFor="weekStart">Início (Domingo)</Label>
               <Input
                 id="weekStart"
                 type="date"
                 value={formData.weekStart}
-                onChange={(e) => handleChange('weekStart', e.target.value)}
-                required
+                readOnly
+                className="bg-muted"
               />
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="deliveryStage">Etapa de Entrega *</Label>
-              <Select
-                value={formData.deliveryStage}
-                onValueChange={(value) => handleChange('deliveryStage', value)}
-                required
-              >
-                <SelectTrigger id="deliveryStage">
-                  <SelectValue placeholder="Selecione a etapa" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.values(DELIVERY_STAGES).map(stage => (
-                    <SelectItem key={stage} value={stage}>
-                      {DELIVERY_STAGE_LABELS[stage]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
 
             <div className="space-y-2">
-              <Label htmlFor="progress">Progresso (%) *</Label>
+              <Label htmlFor="weekEnd">Fim (Sábado)</Label>
               <Input
-                id="progress"
-                type="number"
-                min="0"
-                max="100"
-                value={formData.progress}
-                onChange={(e) => handleChange('progress', e.target.value)}
-                required
+                id="weekEnd"
+                type="date"
+                value={formData.weekEnd}
+                readOnly
+                className="bg-muted"
               />
             </div>
           </div>
 
+          {/* Título */}
           <div className="space-y-2">
-            <Label htmlFor="deadline">Prazo</Label>
+            <Label htmlFor="title">Título *</Label>
             <Input
-              id="deadline"
-              type="date"
-              value={formData.deadline}
-              onChange={(e) => handleChange('deadline', e.target.value)}
+              id="title"
+              value={formData.title}
+              onChange={(e) => handleChange('title', e.target.value)}
+              placeholder="Ex: Implementar autenticação OAuth"
+              required
             />
           </div>
 
+          {/* Status */}
           <div className="space-y-2">
-            <Label htmlFor="demandId">Demanda Vinculada (opcional)</Label>
+            <Label htmlFor="status">Status *</Label>
             <Select
-              value={formData.demandId || ''}
+              value={formData.status}
+              onValueChange={(value) => handleChange('status', value)}
+              required
+            >
+              <SelectTrigger id="status">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="nao-iniciada">Não Iniciada</SelectItem>
+                <SelectItem value="em-andamento">Em Andamento</SelectItem>
+                <SelectItem value="concluida">Concluída</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Demanda Relacionada (opcional) */}
+          <div className="space-y-2">
+            <Label htmlFor="demandId">Demanda Relacionada (opcional)</Label>
+            <Select
+              value={formData.demandId || undefined}
               onValueChange={(value) => handleChange('demandId', value)}
             >
               <SelectTrigger id="demandId">
-                <SelectValue placeholder="Sem vínculo com demanda">
-                  {selectedDemand ? (
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs">
-                        {selectedDemand.category}
-                      </Badge>
-                      <span>{selectedDemand.title}</span>
-                    </div>
-                  ) : (
-                    'Sem vínculo com demanda'
-                  )}
-                </SelectValue>
+                <SelectValue placeholder="Selecione uma demanda" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Sem vínculo com demanda</SelectItem>
-                {demands.map(demand => (
-                  <SelectItem key={demand.id} value={demand.id}>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs">
-                        {demand.category}
-                      </Badge>
-                      <span className="truncate">{demand.title}</span>
-                    </div>
-                  </SelectItem>
-                ))}
+                {Object.entries(dashboardData?.demands || {}).map(([category, demands]) =>
+                  demands.map((demand) => (
+                    <SelectItem key={demand.id} value={demand.id}>
+                      [{category}] {demand.title}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
-            {selectedDemand && (
-              <p className="text-xs text-gray-500">
-                Status: {selectedDemand.status} | Etapa: {selectedDemand.stage}
-              </p>
+            {formData.demandId && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => handleChange('demandId', '')}
+                className="text-xs text-muted-foreground"
+              >
+                Limpar seleção
+              </Button>
+            )}
+            <p className="text-xs text-muted-foreground">
+              A categoria e prioridade serão herdadas da demanda selecionada
+            </p>
+          </div>
+
+          {/* Devs Alocados */}
+          <div className="space-y-2">
+            <Label>Devs Alocados *</Label>
+            <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-muted/20">
+              {dashboardData?.devs?.map((dev) => (
+                <Badge
+                  key={dev.id}
+                  variant={formData.devIds.includes(dev.id) ? "default" : "outline"}
+                  className="cursor-pointer"
+                  onClick={() => toggleDev(dev.id)}
+                >
+                  {dev.name}
+                </Badge>
+              ))}
+            </div>
+          </div>
+
+          {/* Conquistas/Highlights */}
+          <div className="space-y-2">
+            <Label>Conquistas</Label>
+            <div className="flex gap-2">
+              <Input
+                value={currentHighlight}
+                onChange={(e) => setCurrentHighlight(e.target.value)}
+                placeholder="Adicionar conquista..."
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addHighlight())}
+              />
+              <Button type="button" onClick={addHighlight} variant="outline">
+                Adicionar
+              </Button>
+            </div>
+            {formData.highlights.length > 0 && (
+              <div className="space-y-2 mt-2">
+                {formData.highlights.map((highlight, index) => (
+                  <div key={index} className="flex items-center gap-2 p-2 bg-blue-50 rounded-md">
+                    <span className="flex-1 text-sm">{highlight.text}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeHighlight(index)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 
+          {/* Entraves/Blockers */}
           <div className="space-y-2">
-            <Label>Desenvolvedores Alocados *</Label>
-            <div className="flex flex-wrap gap-2 p-3 border rounded-md min-h-[42px]">
-              {devs.length === 0 ? (
-                <span className="text-sm text-gray-400">Nenhum desenvolvedor disponível</span>
-              ) : (
-                devs.map(dev => (
-                  <button
-                    key={dev.id}
-                    type="button"
-                    onClick={() => toggleDev(dev.name)}
-                    className={`px-3 py-1 text-sm rounded-full transition-colors ${
-                      formData.assignedDevs.includes(dev.name)
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                  >
-                    {dev.name}
-                  </button>
-                ))
-              )}
+            <Label>Entraves</Label>
+            <div className="flex gap-2">
+              <Input
+                value={currentBlocker}
+                onChange={(e) => setCurrentBlocker(e.target.value)}
+                placeholder="Adicionar entrave..."
+                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addBlocker())}
+              />
+              <Button type="button" onClick={addBlocker} variant="outline">
+                Adicionar
+              </Button>
             </div>
-            {formData.assignedDevs.length === 0 && (
-              <p className="text-xs text-red-500">
-                Selecione pelo menos um desenvolvedor
-              </p>
+            {formData.blockers.length > 0 && (
+              <div className="space-y-2 mt-2">
+                {formData.blockers.map((blocker, index) => (
+                  <div key={index} className="flex items-center gap-2 p-2 bg-red-50 rounded-md">
+                    <span className="flex-1 text-sm">{blocker.text}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeBlocker(index)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 
@@ -307,10 +375,7 @@ export default function TimelineTaskForm({ task, isOpen, onClose, onSave }) {
             >
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              disabled={loading || formData.assignedDevs.length === 0}
-            >
+            <Button type="submit" disabled={loading || !formData.title || formData.devIds.length === 0}>
               {loading ? 'Salvando...' : (task ? 'Atualizar' : 'Criar')}
             </Button>
           </DialogFooter>

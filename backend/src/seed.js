@@ -10,8 +10,9 @@ async function main() {
   try {
     // Limpar dados existentes (cuidado em produção!)
     console.log('🗑️  Clearing existing data...');
-    await prisma.timelineTask.deleteMany();
+    await prisma.timelineTaskAssignment.deleteMany();
     await prisma.highlight.deleteMany();
+    await prisma.timelineTask.deleteMany();
     await prisma.delivery.deleteMany();
     await prisma.demand.deleteMany();
     await prisma.dev.deleteMany();
@@ -116,32 +117,68 @@ async function main() {
     }
     console.log(`✅ Created ${highlightCount} highlights`);
 
-    // Inserir timeline tasks
+    // Inserir timeline tasks com novo schema
     console.log('📅 Seeding timeline...');
     let taskCount = 0;
 
     // Current week tasks
     for (const task of initialData.timeline.currentWeek.tasks) {
-      await prisma.timelineTask.create({
+      // Criar a timeline task
+      const createdTask = await prisma.timelineTask.create({
         data: {
           id: task.id,
           weekType: 'current',
-          weekStart: new Date(task.deadline || initialData.timeline.currentWeek.startDate),
+          weekStart: new Date(initialData.timeline.currentWeek.startDate),
           weekEnd: new Date(initialData.timeline.currentWeek.endDate),
           title: task.title,
-          priority: task.priority,
-          status: task.status,
-          progress: task.progress,
-          assignedDevs: task.assignedDevs,
-          deadline: task.deadline ? new Date(task.deadline) : null,
-          deliveryStage: task.deliveryStage || null,
-          demandId: task.demandId || null,
-          category: task.category,
-          highlights: task.highlights || [],
-          blockers: task.blockers || []
+          status: task.status || 'nao-iniciada',
+          demandId: task.demandId || null
         }
       });
       taskCount++;
+
+      // Associar devs se existirem
+      if (task.assignedDevs && task.assignedDevs.length > 0) {
+        for (const devName of task.assignedDevs) {
+          // Buscar o dev pelo nome
+          const dev = initialData.devs.find(d => d.name === devName);
+          if (dev) {
+            await prisma.timelineTaskAssignment.create({
+              data: {
+                timelineTaskId: createdTask.id,
+                devId: dev.id
+              }
+            });
+          }
+        }
+      }
+
+      // Criar highlights (conquistas) se existirem
+      if (task.highlights && task.highlights.length > 0) {
+        for (const highlightText of task.highlights) {
+          await prisma.highlight.create({
+            data: {
+              type: 'conquista',
+              text: highlightText,
+              timelineTaskId: createdTask.id
+            }
+          });
+        }
+      }
+
+      // Criar entraves (blockers) se existirem
+      if (task.blockers && task.blockers.length > 0) {
+        for (const blockerText of task.blockers) {
+          await prisma.highlight.create({
+            data: {
+              type: 'entrave',
+              text: blockerText,
+              severity: 'alta',
+              timelineTaskId: createdTask.id
+            }
+          });
+        }
+      }
     }
 
     console.log(`✅ Created ${taskCount} timeline tasks`);

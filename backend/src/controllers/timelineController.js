@@ -6,9 +6,17 @@ export const timelineController = {
     try {
       const tasks = await prisma.timelineTask.findMany({
         include: {
-          demand: true // Incluir dados da demand relacionada
+          demand: true, // Demand com sua categoria
+          assignedDevs: {
+            include: {
+              dev: true // Dados completos do dev
+            }
+          },
+          highlights: true // Conquistas e entraves
         },
-        orderBy: { weekStart: 'desc' }
+        orderBy: [
+          { weekStart: 'desc' }
+        ]
       });
 
       // Organizar por weekType
@@ -31,7 +39,13 @@ export const timelineController = {
       const task = await prisma.timelineTask.findUnique({
         where: { id },
         include: {
-          demand: true // Incluir dados da demand relacionada
+          demand: true,
+          assignedDevs: {
+            include: {
+              dev: true
+            }
+          },
+          highlights: true
         }
       });
 
@@ -51,6 +65,15 @@ export const timelineController = {
       const { weekType } = req.params;
       const tasks = await prisma.timelineTask.findMany({
         where: { weekType },
+        include: {
+          demand: true,
+          assignedDevs: {
+            include: {
+              dev: true
+            }
+          },
+          highlights: true
+        },
         orderBy: { weekStart: 'desc' }
       });
 
@@ -68,16 +91,11 @@ export const timelineController = {
         weekStart,
         weekEnd,
         title,
-        priority,
         status,
-        progress,
-        assignedDevs,
-        deadline,
-        deliveryStage,
         demandId,
-        category,
-        highlights,
-        blockers
+        devIds,         // Array de IDs de devs
+        highlights,     // Array de { type: 'conquista', text: '...' }
+        blockers        // Array de { text: '...', severity: 'alta' }
       } = req.body;
 
       if (!weekType || !weekStart || !weekEnd || !title) {
@@ -86,29 +104,78 @@ export const timelineController = {
         });
       }
 
+      // Criar a timeline task
       const task = await prisma.timelineTask.create({
         data: {
           weekType,
           weekStart: new Date(weekStart),
           weekEnd: new Date(weekEnd),
           title,
-          priority,
-          status,
-          progress: progress || 0,
-          assignedDevs: assignedDevs || [],
-          deadline: deadline ? new Date(deadline) : null,
-          deliveryStage,
-          demandId,
-          category,
-          highlights: highlights || [],
-          blockers: blockers || []
-        },
-        include: {
-          demand: true
+          status: status || 'nao-iniciada',
+          demandId: demandId || null
         }
       });
 
-      res.status(201).json(task);
+      // Associar devs se existirem
+      if (devIds && devIds.length > 0) {
+        await Promise.all(
+          devIds.map(devId =>
+            prisma.timelineTaskAssignment.create({
+              data: {
+                timelineTaskId: task.id,
+                devId: devId
+              }
+            })
+          )
+        );
+      }
+
+      // Criar highlights (conquistas) se existirem
+      if (highlights && highlights.length > 0) {
+        await Promise.all(
+          highlights.map(h =>
+            prisma.highlight.create({
+              data: {
+                type: 'conquista',
+                text: h.text,
+                timelineTaskId: task.id
+              }
+            })
+          )
+        );
+      }
+
+      // Criar entraves (blockers) se existirem
+      if (blockers && blockers.length > 0) {
+        await Promise.all(
+          blockers.map(b =>
+            prisma.highlight.create({
+              data: {
+                type: 'entrave',
+                text: b.text,
+                severity: b.severity || 'alta',
+                timelineTaskId: task.id
+              }
+            })
+          )
+        );
+      }
+
+      // Buscar a task completa com todas as relações
+      const fullTask = await prisma.timelineTask.findUnique({
+        where: { id: task.id },
+        include: {
+          demand: true,
+          assignedDevs: {
+            include: {
+              dev: true
+            }
+          },
+          highlights: true
+        }
+      });
+
+      res.status(201).json(fullTask);
     } catch (error) {
       next(error);
     }
@@ -123,47 +190,119 @@ export const timelineController = {
         weekStart,
         weekEnd,
         title,
-        priority,
         status,
-        progress,
-        assignedDevs,
-        deadline,
-        deliveryStage,
         demandId,
-        category,
-        highlights,
-        blockers
+        devIds,         // Array de IDs de devs
+        highlights,     // Array de { text: '...' }
+        blockers        // Array de { text: '...', severity: 'alta' }
       } = req.body;
 
+      // Atualizar a timeline task
       const updateData = {
         weekType,
         title,
-        priority,
         status,
-        progress,
-        assignedDevs,
-        deliveryStage,
-        demandId,
-        category,
-        highlights,
-        blockers
+        demandId
       };
 
       if (weekStart) updateData.weekStart = new Date(weekStart);
       if (weekEnd) updateData.weekEnd = new Date(weekEnd);
-      if (deadline !== undefined) {
-        updateData.deadline = deadline ? new Date(deadline) : null;
-      }
 
       const task = await prisma.timelineTask.update({
         where: { id },
-        data: updateData,
+        data: updateData
+      });
+
+      // Se devIds foi fornecido, atualizar associações
+      if (devIds !== undefined) {
+        // Remover associações antigas
+        await prisma.timelineTaskAssignment.deleteMany({
+          where: { timelineTaskId: id }
+        });
+
+        // Criar novas associações
+        if (devIds.length > 0) {
+          await Promise.all(
+            devIds.map(devId =>
+              prisma.timelineTaskAssignment.create({
+                data: {
+                  timelineTaskId: id,
+                  devId: devId
+                }
+              })
+            )
+          );
+        }
+      }
+
+      // Se highlights foi fornecido, atualizar
+      if (highlights !== undefined) {
+        // Remover conquistas antigas
+        await prisma.highlight.deleteMany({
+          where: {
+            timelineTaskId: id,
+            type: 'conquista'
+          }
+        });
+
+        // Criar novas conquistas
+        if (highlights.length > 0) {
+          await Promise.all(
+            highlights.map(h =>
+              prisma.highlight.create({
+                data: {
+                  type: 'conquista',
+                  text: h.text,
+                  timelineTaskId: id
+                }
+              })
+            )
+          );
+        }
+      }
+
+      // Se blockers foi fornecido, atualizar
+      if (blockers !== undefined) {
+        // Remover entraves antigos
+        await prisma.highlight.deleteMany({
+          where: {
+            timelineTaskId: id,
+            type: 'entrave'
+          }
+        });
+
+        // Criar novos entraves
+        if (blockers.length > 0) {
+          await Promise.all(
+            blockers.map(b =>
+              prisma.highlight.create({
+                data: {
+                  type: 'entrave',
+                  text: b.text,
+                  severity: b.severity || 'alta',
+                  timelineTaskId: id
+                }
+              })
+            )
+          );
+        }
+      }
+
+      // Buscar a task completa com todas as relações
+      const fullTask = await prisma.timelineTask.findUnique({
+        where: { id },
         include: {
-          demand: true
+          demand: true,
+          assignedDevs: {
+            include: {
+              dev: true
+            }
+          },
+          highlights: true
         }
       });
 
-      res.json(task);
+      res.json(fullTask);
     } catch (error) {
       next(error);
     }
@@ -174,6 +313,9 @@ export const timelineController = {
     try {
       const { id } = req.params;
 
+      // Cascade delete vai remover automaticamente:
+      // - TimelineTaskAssignment
+      // - Highlight (com onDelete: Cascade)
       await prisma.timelineTask.delete({
         where: { id }
       });

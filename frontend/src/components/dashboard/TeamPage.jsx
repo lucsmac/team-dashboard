@@ -11,17 +11,17 @@ import DevForm from '../devs/DevForm';
  * Página de visualização do time
  */
 export const TeamPage = () => {
-  const { dashboardData, createDev, updateDev, deleteDev } = useDashboardData();
+  const { dashboardData, addDev, updateDev, removeDev } = useDashboardData();
   const [searchTerm, setSearchTerm] = useState('');
   const [projectFilter, setProjectFilter] = useState('all');
   const [viewMode, setViewMode] = useState('cards'); // 'cards' ou 'table'
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingDev, setEditingDev] = useState(null);
 
-  // Extrai lista única de projetos atuais
+  // Extrai lista única de projetos atuais (filtra vazios)
   const projects = useMemo(() => {
     const unique = [...new Set(dashboardData.devs.map(dev => dev.thisWeek))];
-    return unique.sort();
+    return unique.filter(p => p && p.trim() !== '').sort();
   }, [dashboardData.devs]);
 
   // Filtra devs baseado nos filtros ativos
@@ -47,7 +47,7 @@ export const TeamPage = () => {
     if (editingDev) {
       await updateDev(editingDev.id, formData);
     } else {
-      await createDev(formData);
+      await addDev(formData);
     }
   };
 
@@ -105,7 +105,7 @@ export const TeamPage = () => {
               key={dev.id}
               dev={dev}
               onEdit={handleOpenForm}
-              onDelete={deleteDev}
+              onDelete={removeDev}
             />
           ))}
         </div>
@@ -126,7 +126,6 @@ export const TeamPage = () => {
         </div>
       )}
 
-      {/* Form Dialog */}
       <DevForm
         dev={editingDev}
         isOpen={isFormOpen}

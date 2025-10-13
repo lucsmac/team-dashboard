@@ -23,6 +23,7 @@ export const DEV_ROLE_LABELS = {
 
 // Senioridade dos desenvolvedores
 export const SENIORITY_LEVELS = {
+  TRAINEE: 'trainee',
   JUNIOR: 'junior',
   PLENO: 'pleno',
   SENIOR: 'senior',
@@ -31,6 +32,7 @@ export const SENIORITY_LEVELS = {
 };
 
 export const SENIORITY_LABELS = {
+  [SENIORITY_LEVELS.TRAINEE]: 'Trainee',
   [SENIORITY_LEVELS.JUNIOR]: 'Júnior',
   [SENIORITY_LEVELS.PLENO]: 'Pleno',
   [SENIORITY_LEVELS.SENIOR]: 'Sênior',
@@ -108,6 +110,7 @@ export const ROLE_COLORS = {
 
 // Cores por senioridade
 export const SENIORITY_COLORS = {
+  [SENIORITY_LEVELS.TRAINEE]: 'bg-gray-200',
   [SENIORITY_LEVELS.JUNIOR]: 'bg-gray-300',
   [SENIORITY_LEVELS.PLENO]: 'bg-blue-300',
   [SENIORITY_LEVELS.SENIOR]: 'bg-purple-300',
@@ -163,17 +166,23 @@ export const WEEK_TYPE_LABELS = {
 
 // Categorias de demandas
 export const DEMAND_CATEGORIES = {
-  QUADROX: '4DX',
+  QUATRODX: '4DX',
   REDEMOINHO: 'Redemoinho',
   STELLANTIS: 'Stellantis',
-  PROJETOS_ESPECIAIS: 'Projetos Especiais'
+  SERVICE_DESK: 'Service Desk',
+  GENIUS: 'Genius',
+  NITRO: 'Nitro',
+  AUTOBOT: 'Autobot'
 };
 
 export const DEMAND_CATEGORY_LABELS = {
-  [DEMAND_CATEGORIES.QUADROX]: '4DX',
+  [DEMAND_CATEGORIES.QUATRODX]: '4DX',
   [DEMAND_CATEGORIES.REDEMOINHO]: 'Redemoinho',
   [DEMAND_CATEGORIES.STELLANTIS]: 'Stellantis',
-  [DEMAND_CATEGORIES.PROJETOS_ESPECIAIS]: 'Projetos Especiais'
+  [DEMAND_CATEGORIES.SERVICE_DESK]: 'Service Desk',
+  [DEMAND_CATEGORIES.GENIUS]: 'Genius',
+  [DEMAND_CATEGORIES.NITRO]: 'Nitro',
+  [DEMAND_CATEGORIES.AUTOBOT]: 'Autobot'
 };
 
 // Alias para status ativo (backend usa 'ativa')

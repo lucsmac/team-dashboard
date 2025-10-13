@@ -5,6 +5,10 @@ export const highlightsController = {
   async getAll(req, res, next) {
     try {
       const highlights = await prisma.highlight.findMany({
+        include: {
+          demand: true,
+          timelineTask: true
+        },
         orderBy: { createdAt: 'desc' }
       });
 
@@ -57,7 +61,7 @@ export const highlightsController = {
   // POST /api/highlights - Criar novo highlight
   async create(req, res, next) {
     try {
-      const { type, text, severity } = req.body;
+      const { type, text, severity, achievementDate, demandId, timelineTaskId } = req.body;
 
       if (!type || !text) {
         return res.status(400).json({ error: 'Type and text are required' });
@@ -70,7 +74,18 @@ export const highlightsController = {
       }
 
       const highlight = await prisma.highlight.create({
-        data: { type, text, severity }
+        data: {
+          type,
+          text,
+          severity,
+          achievementDate: achievementDate ? new Date(achievementDate) : null,
+          demandId: demandId || null,
+          timelineTaskId: timelineTaskId || null
+        },
+        include: {
+          demand: true,
+          timelineTask: true
+        }
       });
 
       res.status(201).json(highlight);
@@ -83,11 +98,22 @@ export const highlightsController = {
   async update(req, res, next) {
     try {
       const { id } = req.params;
-      const { type, text, severity } = req.body;
+      const { type, text, severity, achievementDate, demandId, timelineTaskId } = req.body;
 
       const highlight = await prisma.highlight.update({
         where: { id },
-        data: { type, text, severity }
+        data: {
+          type,
+          text,
+          severity,
+          achievementDate: achievementDate ? new Date(achievementDate) : null,
+          demandId: demandId || null,
+          timelineTaskId: timelineTaskId || null
+        },
+        include: {
+          demand: true,
+          timelineTask: true
+        }
       });
 
       res.json(highlight);
@@ -106,6 +132,58 @@ export const highlightsController = {
       });
 
       res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // GET /api/highlights/week/:weekStart/:weekEnd - Buscar highlights de uma semana
+  // Retorna highlights que estão:
+  // 1. Associados a tasks dessa semana
+  // 2. OU foram criados (createdAt) nessa semana
+  async getByWeek(req, res, next) {
+    try {
+      const { weekStart, weekEnd } = req.params;
+
+      const startDate = new Date(weekStart);
+      const endDate = new Date(weekEnd);
+
+      // Buscar highlights
+      const highlights = await prisma.highlight.findMany({
+        where: {
+          OR: [
+            // Highlights associados a tasks dessa semana
+            {
+              timelineTask: {
+                weekStart: { gte: startDate },
+                weekEnd: { lte: endDate }
+              }
+            },
+            // OU highlights criados nessa semana
+            {
+              createdAt: {
+                gte: startDate,
+                lte: endDate
+              },
+              timelineTaskId: null // Apenas os não associados a tasks
+            }
+          ]
+        },
+        include: {
+          demand: true,
+          timelineTask: true
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      // Organizar por tipo
+      const byType = {
+        blockers: highlights.filter(h => h.type === 'blockers'),
+        achievements: highlights.filter(h => h.type === 'achievements'),
+        important: highlights.filter(h => h.type === 'important')
+      };
+
+      res.json(byType);
     } catch (error) {
       next(error);
     }

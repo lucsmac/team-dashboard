@@ -19,7 +19,7 @@ export const MetricsCards = () => {
 
   const metrics = [
     {
-      title: 'Devs Ativos',
+      title: 'Devs focados',
       value: activeDevs,
       subtitle: `${utilization}% utilização`,
       icon: Users,
@@ -27,7 +27,7 @@ export const MetricsCards = () => {
       bgColor: 'bg-muted/50'
     },
     {
-      title: 'Demandas Ativas',
+      title: 'Demandas ativas',
       value: getActiveDemandsCount(),
       subtitle: `${getPlannedDemandsCount()} planejadas`,
       icon: TrendingUp,

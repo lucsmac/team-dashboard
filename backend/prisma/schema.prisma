@@ -18,12 +18,15 @@ model Dev {
   name       String
   color      String
   role       String   // 'frontend', 'backend', 'fullstack', 'mobile', 'devops', 'qa'
-  seniority  String   // 'junior', 'pleno', 'senior', 'especialista', 'lider'
+  seniority  String   // 'trainee', 'junior', 'pleno', 'senior', 'especialista', 'lider'
   lastWeek   String?  @map("last_week")
   thisWeek   String?  @map("this_week")
   nextWeek   String?  @map("next_week")
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Relações
+  timelineTasks TimelineTaskAssignment[]
 
   @@map("devs")
   @@index([role])
@@ -45,8 +48,9 @@ model Demand {
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
 
-  // Relação com TimelineTasks
+  // Relações
   timelineTasks TimelineTask[]
+  highlights    Highlight[]
 
   @@map("demands")
   @@index([category])
@@ -67,45 +71,67 @@ model Delivery {
 }
 
 // Highlights: blockers, achievements, important info
+// Para TimelineTask: type = 'conquista' ou 'entrave'
 model Highlight {
-  id        String   @id @default(uuid())
-  type      String   // 'blockers', 'achievements', 'important'
-  text      String
-  severity  String?  // Para blockers e important
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id              String        @id @default(uuid())
+  type            String        // 'blockers', 'achievements', 'important', 'conquista', 'entrave'
+  text            String
+  severity        String?       // Para blockers, entraves e important
+  achievementDate DateTime?     @map("achievement_date") // Data da conquista
+  demandId        String?       @map("demand_id") // Relação com demanda
+  demand          Demand?       @relation(fields: [demandId], references: [id], onDelete: SetNull)
+  timelineTaskId  String?       @map("timeline_task_id") // Relação com task da timeline
+  timelineTask    TimelineTask? @relation(fields: [timelineTaskId], references: [id], onDelete: Cascade)
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
 
   @@map("highlights")
   @@index([type])
+  @@index([demandId])
+  @@index([timelineTaskId])
+  @@index([createdAt])
 }
 
 // Tarefas da timeline semanal
 model TimelineTask {
   id              String    @id @default(uuid())
   weekType        String    @map("week_type") // 'current', 'previous', 'upcoming'
-  weekStart       DateTime  @map("week_start")
-  weekEnd         DateTime  @map("week_end")
+  weekStart       DateTime  @map("week_start") // Sempre domingo
+  weekEnd         DateTime  @map("week_end")   // Sempre sábado
   title           String
-  priority        String?
-  status          String?
-  progress        Int       @default(0)
-  assignedDevs    String[]  @map("assigned_devs")
-  deadline        DateTime?
-  deliveryStage   String?   @map("delivery_stage") // 'dev', 'testes', 'homologacao', 'deploy'
-  category        String?
-  highlights      String[]
-  blockers        String[]
+  status          String    @default("nao-iniciada") // 'nao-iniciada', 'em-andamento', 'concluida'
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  // Relação com Demand (opcional - nem toda task precisa estar vinculada a uma demand)
-  demandId        String?   @map("demand_id")
-  demand          Demand?   @relation(fields: [demandId], references: [id], onDelete: SetNull)
+  // Relações
+  demandId        String?      @map("demand_id")
+  demand          Demand?      @relation(fields: [demandId], references: [id], onDelete: Cascade)
+
+  // Devs associados (relação many-to-many)
+  assignedDevs    TimelineTaskAssignment[]
+
+  // Conquistas e entraves (relação com Highlight)
+  highlights      Highlight[]
 
   @@map("timeline_tasks")
   @@index([weekType])
-  @@index([deliveryStage])
   @@index([demandId])
+  @@index([status])
+}
+
+// Tabela de associação many-to-many entre TimelineTask e Dev
+model TimelineTaskAssignment {
+  id             String       @id @default(uuid())
+  timelineTaskId String       @map("timeline_task_id")
+  timelineTask   TimelineTask @relation(fields: [timelineTaskId], references: [id], onDelete: Cascade)
+  devId          Int          @map("dev_id")
+  dev            Dev          @relation(fields: [devId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@unique([timelineTaskId, devId])
+  @@map("timeline_task_assignments")
+  @@index([timelineTaskId])
+  @@index([devId])
 }
 
 // Configurações gerais (week label, priorities, etc)

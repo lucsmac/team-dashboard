@@ -3,26 +3,39 @@ import { CheckCircle, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
+import { EmptyTaskPlaceholder } from './EmptyTaskPlaceholder';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-/**
- * Seção da semana anterior com highlights e taxa de conclusão
- */
 export const PreviousWeekSection = ({ data }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const { startDate, endDate, completionRate, completed, total, highlights, notes } = data;
+  const {
+    startDate,
+    endDate,
+    completionRate = 0,
+    completed = 0,
+    total = 0,
+    highlights = [],
+    notes
+  } = data || {};
+
+  // Usar datas padrão se não fornecidas (semana passada)
+  const now = new Date();
+  const lastSunday = new Date(now);
+  lastSunday.setDate(now.getDate() - now.getDay() - 7);
+  const lastSaturday = new Date(lastSunday);
+  lastSaturday.setDate(lastSunday.getDate() + 6);
+
+  const effectiveStartDate = startDate || lastSunday.toISOString();
+  const effectiveEndDate = endDate || lastSaturday.toISOString();
 
   const completionPercent = Math.round(completionRate * 100);
 
-  // Formata período
-  const periodText = `${format(new Date(startDate), 'd MMM', { locale: ptBR })} - ${format(new Date(endDate), 'd MMM', { locale: ptBR })}`;
+  const periodText = `${format(new Date(effectiveStartDate), 'd MMM', { locale: ptBR })} - ${format(new Date(effectiveEndDate), 'd MMM', { locale: ptBR })}`;
 
   return (
     <Card className="relative border opacity-70 hover:opacity-100 transition-all duration-300 hover:shadow-lg rounded-xl overflow-hidden">
-      {/* Accent top border - neutro */}
       <div className="absolute top-0 left-0 right-0 h-0.5 bg-muted-foreground" />
 
       <CardHeader className="pb-4 pt-5">
@@ -32,7 +45,7 @@ export const PreviousWeekSection = ({ data }) => {
               <div className="p-1.5 bg-muted rounded-lg">
                 <CheckCircle className="h-4 w-4 text-muted-foreground" />
               </div>
-              <span className="text-foreground">Semana Anterior</span>
+              <span className="text-foreground">Semana anterior</span>
             </CardTitle>
             <div className="flex items-center gap-2 text-xs text-muted-foreground ml-11">
               <Calendar className="h-3.5 w-3.5" />
@@ -46,10 +59,9 @@ export const PreviousWeekSection = ({ data }) => {
       </CardHeader>
 
       <CardContent className="space-y-5">
-        {/* Taxa de conclusão - mantém cores de progresso */}
         <div className="space-y-3 p-4 bg-muted/30 rounded-lg border">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground font-medium">Taxa de Conclusão</span>
+            <span className="text-muted-foreground font-medium">Taxa de conclusão</span>
             <span className="font-bold text-green-700 text-base">
               {completionPercent}% <span className="text-xs font-normal text-muted-foreground">({completed}/{total})</span>
             </span>
@@ -62,41 +74,55 @@ export const PreviousWeekSection = ({ data }) => {
           </div>
         </div>
 
-        {/* Highlights preview */}
-        {!isExpanded && highlights.length > 0 && (
-          <div className="bg-muted/20 p-4 rounded-lg border">
-            <p className="flex items-center gap-2 text-sm font-medium">
-              <CheckCircle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-              <span className="text-foreground">{highlights[0].text}</span>
-            </p>
-            {highlights.length > 1 && (
-              <p className="text-xs text-muted-foreground mt-2 ml-6 font-medium">
-                +{highlights.length - 1} conquista(s)
-              </p>
+        {!isExpanded && (
+          <>
+            {highlights.length > 0 ? (
+              <div className="bg-muted/20 p-4 rounded-lg border">
+                <p className="flex items-center gap-2 text-sm font-medium">
+                  <CheckCircle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <span className="text-foreground">{highlights[0].text}</span>
+                </p>
+                {highlights.length > 1 && (
+                  <p className="text-xs text-muted-foreground mt-2 ml-6 font-medium">
+                    +{highlights.length - 1} conquista(s)
+                  </p>
+                )}
+              </div>
+            ) : (
+              <EmptyTaskPlaceholder
+                count={1}
+                message="Nenhuma conquista registrada"
+                compact
+              />
             )}
-          </div>
+          </>
         )}
 
-        {/* Conteúdo expandido */}
         {isExpanded && (
           <div className="space-y-4 pt-3 border-t">
-            {/* Todos os highlights */}
-            {highlights.length > 0 && (
-              <div className="space-y-3">
-                <h4 className="text-sm font-bold flex items-center gap-2">
-                  <span className="text-lg">🎉</span>
-                  Conquistas da Semana
-                </h4>
-                {highlights.map((highlight, idx) => (
-                  <div key={idx} className="flex items-start gap-3 text-sm bg-muted/20 p-4 rounded-lg border">
-                    <CheckCircle className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-                    <span className="font-medium text-foreground">{highlight.text}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="space-y-3">
+              <h4 className="text-sm font-bold flex items-center gap-2">
+                <span className="text-lg">🎉</span>
+                Conquistas da Semana
+              </h4>
+              {highlights.length > 0 ? (
+                <>
+                  {highlights.map((highlight, idx) => (
+                    <div key={idx} className="flex items-start gap-3 text-sm bg-muted/20 p-4 rounded-lg border">
+                      <CheckCircle className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                      <span className="font-medium text-foreground">{highlight.text}</span>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <EmptyTaskPlaceholder
+                  count={2}
+                  message="Nenhuma conquista registrada"
+                  compact
+                />
+              )}
+            </div>
 
-            {/* Observações */}
             {notes && (
               <div className="space-y-2">
                 <h4 className="text-sm font-bold flex items-center gap-2">
@@ -111,7 +137,6 @@ export const PreviousWeekSection = ({ data }) => {
           </div>
         )}
 
-        {/* Botão expandir/colapsar */}
         <Button
           variant="ghost"
           size="sm"

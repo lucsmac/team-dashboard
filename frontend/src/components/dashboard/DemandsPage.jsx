@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
  * Página de demandas organizada por categoria
  */
 export const DemandsPage = () => {
-  const { dashboardData, createDemand, updateDemand, deleteDemand } = useDashboardData();
+  const { dashboardData, addDemand, updateDemand, removeDemand } = useDashboardData();
   const [expandedCategories, setExpandedCategories] = useState(
     Object.keys(dashboardData.demands)
   );
@@ -40,9 +40,9 @@ export const DemandsPage = () => {
 
   const handleSave = async (formData) => {
     if (editingDemand) {
-      await updateDemand(editingDemand.id, formData);
+      await updateDemand(editingDemand.category, editingDemand.id, formData);
     } else {
-      await createDemand(formData);
+      await addDemand(formData.category, formData);
     }
   };
 
@@ -98,9 +98,8 @@ export const DemandsPage = () => {
                       className="h-8 w-8 p-0"
                     >
                       <ChevronDown
-                        className={`h-4 w-4 transition-transform ${
-                          isExpanded ? 'rotate-180' : ''
-                        }`}
+                        className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''
+                          }`}
                       />
                     </Button>
                   </div>
@@ -115,7 +114,7 @@ export const DemandsPage = () => {
                           demand={demand}
                           category={category}
                           onEdit={handleOpenForm}
-                          onDelete={deleteDemand}
+                          onDelete={(id) => removeDemand(category, id)}
                         />
                       ))}
                     </div>
@@ -127,7 +126,6 @@ export const DemandsPage = () => {
         </div>
       )}
 
-      {/* Form Dialog */}
       <DemandForm
         demand={editingDemand}
         isOpen={isFormOpen}

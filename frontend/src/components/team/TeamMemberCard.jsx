@@ -21,7 +21,7 @@ export const TeamMemberCard = ({ dev, onEdit, onDelete }) => {
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs">
               <Calendar className="h-3 w-3 mr-1" />
-              Semana Atual
+              Semana atual
             </Badge>
             {onEdit && (
               <Button
@@ -69,20 +69,20 @@ export const TeamMemberCard = ({ dev, onEdit, onDelete }) => {
       <CardContent className="space-y-3">
         {/* Semana Anterior */}
         <div>
-          <p className="text-xs text-muted-foreground mb-1">Semana Anterior</p>
+          <p className="text-xs text-muted-foreground mb-1">Semana anterior</p>
           <p className="text-sm text-gray-700">{dev.lastWeek}</p>
         </div>
 
         {/* Esta Semana */}
         <div className="bg-muted/50 p-3 rounded-lg border-l-2 border-foreground">
-          <p className="text-xs text-foreground font-medium mb-1">Esta Semana</p>
+          <p className="text-xs text-foreground font-medium mb-1">Esta semana</p>
           <p className="text-sm font-semibold text-foreground">{dev.thisWeek}</p>
         </div>
 
         {/* Próxima Semana */}
         <div>
           <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-            Próxima Semana
+            Próxima semana
             <ArrowRight className="h-3 w-3" />
           </p>
           <p className="text-sm text-gray-700">{dev.nextWeek}</p>

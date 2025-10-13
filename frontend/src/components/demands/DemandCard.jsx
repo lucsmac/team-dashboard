@@ -1,4 +1,5 @@
-import { Link as LinkIcon, User, TrendingUp, CheckCircle, Edit2, Trash2 } from 'lucide-react';
+import { Link as LinkIcon, User, TrendingUp, CheckCircle, Edit2, Trash2, ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 import { useDashboardData } from '../../hooks/useDashboardData';
 import { PriorityIndicator } from '../common/StatusIndicator';
 import { getStatusColor, getValueBadgeColor } from '../../utils/colorUtils';
@@ -6,12 +7,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { DEMAND_STAGE_LABELS, STAGE_COLORS } from '@/utils/enums';
+import { TimelineTaskManager } from '../timeline/TimelineTaskManager';
 
 /**
  * Card individual de demanda
  */
 export const DemandCard = ({ demand, category, onEdit, onDelete }) => {
   const { dashboardData } = useDashboardData();
+  const [showTimelineTasks, setShowTimelineTasks] = useState(false);
 
   // Buscar timeline tasks vinculadas
   const linkedTasks = demand.timelineTasks || [];
@@ -106,30 +109,29 @@ export const DemandCard = ({ demand, category, onEdit, onDelete }) => {
           </div>
         )}
 
-        {/* Timeline tasks vinculadas */}
-        {linkedTasks.length > 0 && (
-          <div className="pt-2 border-t space-y-1">
-            <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-              <CheckCircle className="h-3 w-3" />
-              Timeline Tasks ({linkedTasks.length})
-            </p>
-            <div className="space-y-1">
-              {linkedTasks.slice(0, 3).map((task, idx) => (
-                <div key={idx} className="text-xs text-gray-600 flex items-center gap-2">
-                  <div className="flex-1 truncate">{task.title}</div>
-                  <Badge variant="outline" className="text-xs">
-                    {task.progress}%
-                  </Badge>
-                </div>
-              ))}
-              {linkedTasks.length > 3 && (
-                <p className="text-xs text-muted-foreground italic">
-                  +{linkedTasks.length - 3} mais
-                </p>
-              )}
+        {/* Seção de Timeline Tasks */}
+        <div className="pt-2 border-t space-y-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowTimelineTasks(!showTimelineTasks)}
+            className="w-full h-8 justify-between px-2"
+          >
+            <span className="text-xs font-medium flex items-center gap-2">
+              <CheckCircle className="h-3.5 w-3.5" />
+              Gerenciar Timeline Tasks
+            </span>
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${showTimelineTasks ? 'rotate-180' : ''}`}
+            />
+          </Button>
+
+          {showTimelineTasks && (
+            <div className="pt-2">
+              <TimelineTaskManager demandId={demand.id} />
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Status */}
         <div className="flex items-center justify-between pt-2 border-t">

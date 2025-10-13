@@ -10,6 +10,147 @@ export const DashboardProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [editMode, setEditMode] = useState(false);
 
+  // ========== TIMELINE ==========
+
+  const loadTimeline = useCallback(async () => {
+    try {
+      const timeline = await api.getTimeline();
+
+      // Helper para processar array de tasks para PreviousWeek
+      const processPreviousWeekTasks = (tasks) => {
+        if (!tasks || tasks.length === 0) {
+          return null;
+        }
+
+        const completed = tasks.filter(t => t.status === 'concluida').length;
+        const total = tasks.length;
+
+        // Pegar conquistas dos highlights
+        const highlights = tasks.flatMap(t => {
+          return (t.highlights || [])
+            .filter(h => h.type === 'conquista')
+            .map(h => ({ text: h.text }));
+        });
+
+        const dates = tasks.map(t => new Date(t.weekStart).getTime());
+        const startDate = new Date(Math.min(...dates));
+        const endDates = tasks.map(t => new Date(t.weekEnd).getTime());
+        const endDate = new Date(Math.max(...endDates));
+
+        return {
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+          completionRate: total > 0 ? completed / total : 0,
+          completed,
+          total,
+          highlights,
+          notes: null
+        };
+      };
+
+      // Helper para processar array de tasks para CurrentWeek
+      const processCurrentWeekTasks = (tasks) => {
+        if (!tasks || tasks.length === 0) {
+          return null;
+        }
+
+        const dates = tasks.map(t => new Date(t.weekStart).getTime());
+        const startDate = new Date(Math.min(...dates));
+        const endDates = tasks.map(t => new Date(t.weekEnd).getTime());
+        const endDate = new Date(Math.max(...endDates));
+
+        // Coletar alerts: entraves dos highlights
+        const alerts = [];
+
+        tasks.forEach(t => {
+          // Adicionar entraves (tipo 'entrave' nos highlights)
+          (t.highlights || [])
+            .filter(h => h.type === 'entrave')
+            .forEach(h => {
+              alerts.push({
+                text: `🚫 ${h.text}`,
+                severity: h.severity || 'alta'
+              });
+            });
+        });
+
+        return {
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+          tasks: tasks.map(t => ({
+            id: t.id,
+            title: t.title,
+            status: t.status,
+            // Pegar priority da demand associada, se existir
+            priority: t.demand?.priority || 'media',
+            // assignedDevs agora é array de { dev: {...} }
+            assignedDevs: (t.assignedDevs || []).map(a => a.dev.name),
+            // category vem da demand
+            category: t.demand?.category || '',
+            // blockers = highlights do tipo 'entrave'
+            blockers: (t.highlights || [])
+              .filter(h => h.type === 'entrave')
+              .map(h => h.text),
+            // highlights = highlights do tipo 'conquista'
+            highlights: (t.highlights || [])
+              .filter(h => h.type === 'conquista')
+              .map(h => h.text),
+            deadline: t.createdAt // Usando createdAt como referência
+          })),
+          alerts
+        };
+      };
+
+      // Helper para processar array de tasks para UpcomingWeeks
+      const processUpcomingWeekTasks = (tasks) => {
+        if (!tasks || tasks.length === 0) {
+          return null;
+        }
+
+        const dates = tasks.map(t => new Date(t.weekStart).getTime());
+        const startDate = new Date(Math.min(...dates));
+        const endDates = tasks.map(t => new Date(t.weekEnd).getTime());
+        const endDate = new Date(Math.max(...endDates));
+
+        return {
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+          plannedTasks: tasks.map(t => ({
+            id: t.id,
+            title: t.title,
+            // Priority vem da demand
+            priority: t.demand?.priority || 'media',
+            // assignedDevs agora é array de { dev: {...} }
+            assignedDevs: (t.assignedDevs || []).map(a => a.dev.name),
+            // category vem da demand
+            category: t.demand?.category || ''
+          })),
+          notes: null
+        };
+      };
+
+      const previousWeek = processPreviousWeekTasks(timeline.previous);
+      const currentWeek = processCurrentWeekTasks(timeline.current);
+      const upcomingWeeks = timeline.upcoming && timeline.upcoming.length > 0
+        ? [processUpcomingWeekTasks(timeline.upcoming)]
+        : [];
+
+      setDashboardData(prev => ({
+        ...prev,
+        timeline: {
+          previousWeek,
+          currentWeek,
+          upcomingWeeks: upcomingWeeks.filter(Boolean)
+        }
+      }));
+
+      return { success: true };
+    } catch (err) {
+      console.error('Error loading timeline:', err);
+      return { success: false, error: err.message };
+    }
+  }, []);
+
   // Carregar dados do backend na inicialização
   const loadDashboard = useCallback(async () => {
     try {
@@ -18,6 +159,13 @@ export const DashboardProvider = ({ children }) => {
 
       const data = await api.loadDashboard();
       setDashboardData(data);
+
+      // Carregar timeline separadamente usando loadTimeline
+      try {
+        await loadTimeline();
+      } catch (timelineErr) {
+        console.warn('Timeline não disponível:', timelineErr);
+      }
     } catch (err) {
       console.error('Error loading dashboard:', err);
       setError(err);
@@ -30,7 +178,7 @@ export const DashboardProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [loadTimeline]);
 
   // Carregar na montagem
   useEffect(() => {
@@ -261,6 +409,48 @@ export const DashboardProvider = ({ children }) => {
     }
   }, []);
 
+  const addTimelineTask = useCallback(async (newTask) => {
+    try {
+      const created = await api.createTimelineTask(newTask);
+
+      // Recarregar timeline para manter sincronizado
+      await loadTimeline();
+
+      return { success: true, data: created };
+    } catch (err) {
+      console.error('Error adding timeline task:', err);
+      return { success: false, error: err.message };
+    }
+  }, [loadTimeline]);
+
+  const updateTimelineTask = useCallback(async (taskId, updates) => {
+    try {
+      const updated = await api.updateTimelineTask(taskId, updates);
+
+      // Recarregar timeline para manter sincronizado
+      await loadTimeline();
+
+      return { success: true, data: updated };
+    } catch (err) {
+      console.error('Error updating timeline task:', err);
+      return { success: false, error: err.message };
+    }
+  }, [loadTimeline]);
+
+  const removeTimelineTask = useCallback(async (taskId) => {
+    try {
+      await api.deleteTimelineTask(taskId);
+
+      // Recarregar timeline para manter sincronizado
+      await loadTimeline();
+
+      return { success: true };
+    } catch (err) {
+      console.error('Error removing timeline task:', err);
+      return { success: false, error: err.message };
+    }
+  }, [loadTimeline]);
+
   // ========== CONFIG ==========
 
   const updateWeek = useCallback(async (newWeek) => {
@@ -340,6 +530,10 @@ export const DashboardProvider = ({ children }) => {
     updateHighlight,
     addHighlight,
     removeHighlight,
+    loadTimeline,
+    addTimelineTask,
+    updateTimelineTask,
+    removeTimelineTask,
     updateWeek,
     resetData,
     exportData,
