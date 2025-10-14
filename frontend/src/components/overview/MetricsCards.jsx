@@ -14,13 +14,23 @@ export const MetricsCards = () => {
     getAchievementsCount
   } = useDashboardData();
 
-  const activeDevs = dashboardData.devs.length;
-  const utilization = Math.round((activeDevs / 10) * 100); // Assumindo time de até 10 devs
+  // Conta devs únicos alocados nas tasks da semana atual
+  const currentWeekTasks = dashboardData.timeline?.currentWeek?.tasks || [];
+  const focusedDevIds = new Set(
+    currentWeekTasks.flatMap(task =>
+      (task.assignedDevs || [])
+        .map(assignment => assignment.dev?.id)
+        .filter(Boolean)
+    )
+  );
+  const activeDevs = focusedDevIds.size;
+  const totalDevs = dashboardData.devs?.length || 0;
+  const utilization = totalDevs > 0 ? Math.round((activeDevs / totalDevs) * 100) : 0;
 
   const metrics = [
     {
       title: 'Devs focados',
-      value: activeDevs,
+      value: `${activeDevs}/${totalDevs}`,
       subtitle: `${utilization}% utilização`,
       icon: Users,
       color: 'text-blue-600',

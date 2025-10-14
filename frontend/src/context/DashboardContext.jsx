@@ -44,6 +44,12 @@ export const DashboardProvider = ({ children }) => {
           completed,
           total,
           highlights,
+          // Adicionar as tasks completas para exibição
+          tasks: tasks.map(t => ({
+            ...t,
+            priority: t.demand?.priority || 'media',
+            category: t.demand?.category || ''
+          })),
           notes: null
         };
       };
@@ -80,8 +86,7 @@ export const DashboardProvider = ({ children }) => {
           // Keep full task objects with all relationships intact for TaskCard
           tasks: tasks.map(t => ({
             ...t,
-            // Transform assignedDevs from array of objects to array of names
-            assignedDevs: t.assignedDevs?.map(assignment => assignment.dev.name) || [],
+            // Keep assignedDevs as-is with full structure { id, devId, dev: {...} }
             // Add computed priority field for sorting/filtering
             priority: t.demand?.priority || 'media',
             category: t.demand?.category || '',
@@ -108,8 +113,7 @@ export const DashboardProvider = ({ children }) => {
           // Keep full task objects with all relationships intact
           plannedTasks: tasks.map(t => ({
             ...t,
-            // Transform assignedDevs from array of objects to array of names
-            assignedDevs: t.assignedDevs?.map(assignment => assignment.dev.name) || [],
+            // Keep assignedDevs as-is with full structure { id, devId, dev: {...} }
             // Add computed priority and category fields for easier access
             priority: t.demand?.priority || 'media',
             category: t.demand?.category || ''

@@ -1,4 +1,4 @@
-import { Link as LinkIcon, User, TrendingUp, CheckCircle, Edit2, Trash2, ChevronDown } from 'lucide-react';
+import { Link as LinkIcon, User, TrendingUp, CheckCircle, Edit2, Trash2, ChevronDown, CheckCircle2, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { useDashboardData } from '../../hooks/useDashboardData';
 import { PriorityIndicator } from '../common/StatusIndicator';
@@ -26,6 +26,9 @@ export const DemandCard = ({ demand, category, onEdit, onDelete }) => {
           <div className="flex items-start gap-2 flex-1 min-w-0">
             <PriorityIndicator priority={demand.priority} size="sm" />
             <h4 className="font-semibold text-foreground text-sm leading-tight">{demand.title}</h4>
+            {demand.status === 'concluido' && (
+              <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0 mt-0.5" />
+            )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Badge variant="outline" className={`text-xs ${getValueBadgeColor(demand.value)}`}>
@@ -133,12 +136,6 @@ export const DemandCard = ({ demand, category, onEdit, onDelete }) => {
           )}
         </div>
 
-        {/* Status */}
-        <div className="flex items-center justify-between pt-2 border-t">
-          <span className="text-xs text-muted-foreground capitalize">
-            {demand.status.replace('-', ' ')}
-          </span>
-        </div>
       </CardContent>
     </Card>
   );

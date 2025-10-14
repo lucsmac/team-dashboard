@@ -116,7 +116,14 @@ export const UpcomingWeeksSection = ({ data }) => {
                 {previewTasks.map((task, idx) => (
                   <div key={idx} className="flex items-start gap-3 text-sm bg-muted/20 p-3 rounded-lg border hover:border-foreground/20 transition-colors">
                     <span className="text-base">{priorityLabels[task.priority]}</span>
-                    <span className="flex-1 font-medium text-foreground">{task.title}</span>
+                    <span className="flex-1 font-medium text-foreground">
+                      {task.title}
+                      {task.demand?.title && (
+                        <span className="font-normal text-muted-foreground ml-1">
+                          ({task.demand.title})
+                        </span>
+                      )}
+                    </span>
                     {task.assignedDevs && task.assignedDevs.length > 0 && (
                       <div className="flex -space-x-2">
                         {task.assignedDevs.slice(0, 2).map((assignment, devIdx) => {
@@ -173,7 +180,14 @@ export const UpcomingWeeksSection = ({ data }) => {
                     <div key={idx} className="flex items-start gap-3 text-sm bg-muted/20 p-4 rounded-lg border">
                       <span className="text-base">{priorityLabels[task.priority]}</span>
                       <div className="flex-1 space-y-2">
-                        <div className="font-semibold text-foreground">{task.title}</div>
+                        <div className="font-semibold text-foreground">
+                          {task.title}
+                          {task.demand?.title && (
+                            <span className="font-normal text-muted-foreground ml-1">
+                              ({task.demand.title})
+                            </span>
+                          )}
+                        </div>
                         {task.category && (
                           <Badge variant="outline" className="text-xs rounded-full font-medium">
                             {task.category}

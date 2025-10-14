@@ -23,18 +23,37 @@ export const CurrentWeekSection = ({ data }) => {
   const periodText = `${format(new Date(effectiveStartDate), 'd MMM', { locale: ptBR })} - ${format(new Date(effectiveEndDate), 'd MMM', { locale: ptBR })}`;
 
   const ongoingCount = tasks.filter(t => t.status === 'em-andamento').length;
-  const highPriorityCount = tasks.filter(t => t.priority === 'alta').length;
+  const highPriorityCount = tasks.filter(t => t.demand?.priority === 'alta').length;
   // Extract dev IDs from assignedDevs relationship objects
-  const allDevIds = tasks.flatMap(t => (t.assignedDevs || []).map(a => a.devId || a.dev?.id)).filter(Boolean);
+  // assignedDevs pode ser um array de { dev: Dev, devId: number } ou apenas IDs
+  const allDevIds = tasks.flatMap(t => {
+    if (!t.assignedDevs || t.assignedDevs.length === 0) return [];
+
+    return t.assignedDevs.map(a => {
+      // Se tiver o objeto dev, usa o ID dele
+      if (a.dev && a.dev.id) return a.dev.id;
+      // Se não, tenta pegar o devId ou o próprio valor (caso seja só um número)
+      return a.devId || a;
+    });
+  }).filter(Boolean);
   const uniqueDevs = [...new Set(allDevIds)].length;
 
-  const sortedTasks = [...tasks].sort((a, b) => {
-    const priorityOrder = { 'alta': 0, 'média': 1, 'baixa': 2 };
-    if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
-      return priorityOrder[a.priority] - priorityOrder[b.priority];
-    }
-    return a.progress - b.progress;
-  });
+  // Separa tasks 4DX das demais
+  const tasks4DX = tasks.filter(t => t.demand?.category === '4DX');
+  const otherTasks = tasks.filter(t => t.demand?.category !== '4DX');
+
+  const sortTasks = (taskList) => {
+    return [...taskList].sort((a, b) => {
+      const priorityOrder = { 'alta': 0, 'média': 1, 'baixa': 2 };
+      if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+        return priorityOrder[a.priority] - priorityOrder[b.priority];
+      }
+      return a.progress - b.progress;
+    });
+  };
+
+  const sorted4DXTasks = sortTasks(tasks4DX);
+  const sortedOtherTasks = sortTasks(otherTasks);
 
   return (
     <Card className="relative border-2 shadow-xl rounded-xl overflow-hidden">
@@ -119,21 +138,61 @@ export const CurrentWeekSection = ({ data }) => {
           </div>
         )}
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           <h4 className="text-sm font-bold flex items-center gap-2 text-foreground">
             <span className="text-lg">🎯</span>
             Prioridades da semana
           </h4>
-          {sortedTasks.length === 0 ? (
+
+          {tasks.length === 0 ? (
             <EmptyTaskPlaceholder
               count={3}
               message="Nenhuma tarefa em andamento"
             />
           ) : (
-            <div className="space-y-4">
-              {sortedTasks.map((task) => (
-                <TaskCard key={task.id} task={task} />
-              ))}
+            <div className="space-y-6">
+              {/* Tasks 4DX - Seção destacada */}
+              {sorted4DXTasks.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 pb-2">
+                    <div className="h-px flex-1 bg-gradient-to-r from-blue-500/50 to-transparent"></div>
+                    <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-full">
+                      <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                      <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
+                        4DX - Foco Estratégico
+                      </span>
+                    </div>
+                    <div className="h-px flex-1 bg-gradient-to-l from-blue-500/50 to-transparent"></div>
+                  </div>
+                  <div className="space-y-4 pl-1 border-l-2 border-blue-500/30">
+                    {sorted4DXTasks.map((task) => (
+                      <div key={task.id} className="ml-3">
+                        <TaskCard task={task} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tasks regulares */}
+              {sortedOtherTasks.length > 0 && (
+                <div className="space-y-3">
+                  {sorted4DXTasks.length > 0 && (
+                    <div className="flex items-center gap-2 pb-2">
+                      <div className="h-px flex-1 bg-gradient-to-r from-muted to-transparent"></div>
+                      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-2">
+                        Outras Demandas
+                      </span>
+                      <div className="h-px flex-1 bg-gradient-to-l from-muted to-transparent"></div>
+                    </div>
+                  )}
+                  <div className="space-y-4">
+                    {sortedOtherTasks.map((task) => (
+                      <TaskCard key={task.id} task={task} />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

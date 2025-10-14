@@ -1,10 +1,10 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Code, Award, Edit2, Trash2, CheckCircle2, Clock, History, TrendingUp, XCircle } from 'lucide-react';
+import { Calendar, Code, Award, Edit2, Trash2, CheckCircle2, Clock, History, TrendingUp, XCircle, ChevronDown } from 'lucide-react';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { DEV_ROLE_LABELS, SENIORITY_LABELS, DEV_ROLE_COLORS, SENIORITY_COLORS } from '@/utils/enums';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 /**
  * Card individual de desenvolvedor
@@ -12,25 +12,32 @@ import { useMemo } from 'react';
  */
 export const TeamMemberCard = ({ dev, onEdit, onDelete }) => {
   const { dashboardData } = useDashboardData();
+  const [showHistory, setShowHistory] = useState(false);
 
   // Busca tasks da semana atual onde o dev está alocado
-  const currentTasks = dashboardData.timeline?.currentWeek?.tasks?.filter(
-    task => task.assignedDevs?.includes(dev.name)
-  ) || [];
+  const currentTasks = useMemo(() => {
+    return dashboardData.timeline?.currentWeek?.tasks?.filter(task =>
+      task.assignedDevs?.some(assignment =>
+        assignment.dev?.id === dev.id || assignment.devId === dev.id
+      )
+    ) || [];
+  }, [dashboardData.timeline, dev.id]);
 
   // Busca tasks da semana anterior onde o dev estava alocado
   const previousWeekTasks = useMemo(() => {
-    // Para demonstração, vamos buscar do previousWeek se existir estrutura de tasks
-    // Por enquanto retornamos array vazio, mas pode ser expandido quando houver histórico
-    return [];
-  }, [dashboardData.timeline]);
+    return dashboardData.timeline?.previousWeek?.tasks?.filter(task =>
+      task.assignedDevs?.some(assignment =>
+        assignment.dev?.id === dev.id || assignment.devId === dev.id
+      )
+    ) || [];
+  }, [dashboardData.timeline, dev.id]);
 
   // Calcula estatísticas dos últimos 30 dias (excluindo semana atual)
+  // Usando tasks da semana anterior como proxy
   const last30DaysStats = useMemo(() => {
-    // TODO: Implementar quando houver histórico de tasks dos últimos 30 dias
-    // Por enquanto retornamos valores de exemplo baseados no previousWeek
-    const completed = dashboardData.timeline?.previousWeek?.completed || 0;
-    const total = dashboardData.timeline?.previousWeek?.total || 0;
+    const devTasks = previousWeekTasks;
+    const completed = devTasks.filter(t => t.status === 'concluida').length;
+    const total = devTasks.length;
     const notCompleted = total - completed;
 
     return {
@@ -38,7 +45,7 @@ export const TeamMemberCard = ({ dev, onEdit, onDelete }) => {
       notCompleted,
       total
     };
-  }, [dashboardData.timeline]);
+  }, [previousWeekTasks]);
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -108,7 +115,14 @@ export const TeamMemberCard = ({ dev, onEdit, onDelete }) => {
                 <div key={task.id} className="flex items-start gap-2">
                   <CheckCircle2 className="h-4 w-4 mt-0.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">{task.title}</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {task.title}
+                      {task.demand?.title && (
+                        <span className="font-normal text-muted-foreground ml-1">
+                          ({task.demand.title})
+                        </span>
+                      )}
+                    </p>
                     <div className="flex gap-1 mt-1 flex-wrap">
                       <Badge variant="outline" className="text-xs">
                         {task.category}
@@ -132,85 +146,113 @@ export const TeamMemberCard = ({ dev, onEdit, onDelete }) => {
           </div>
         </div>
 
-        {/* Tasks da semana passada */}
-        {previousWeekTasks.length > 0 && (
-          <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border-l-2 border-gray-400">
-            <p className="text-xs text-gray-700 dark:text-gray-300 font-medium mb-2 flex items-center gap-1">
-              <History className="h-3 w-3" />
-              Semana passada
-            </p>
-            <div className="space-y-1">
-              {previousWeekTasks.map((task, index) => (
-                <div key={index} className="flex items-start gap-2">
-                  {task.status === 'concluído' ? (
-                    <CheckCircle2 className="h-3.5 w-3.5 mt-0.5 text-green-600 flex-shrink-0" />
-                  ) : (
-                    <XCircle className="h-3.5 w-3.5 mt-0.5 text-orange-500 flex-shrink-0" />
-                  )}
-                  <div className="flex-1">
-                    <p className="text-sm text-foreground">{task.title}</p>
-                    <Badge
-                      variant="outline"
-                      className={`text-xs mt-1 ${task.status === 'concluído'
-                          ? 'border-green-500 text-green-600'
-                          : 'border-orange-500 text-orange-600'
-                        }`}
+        {/* Botão para expandir histórico */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setShowHistory(!showHistory)}
+          className="w-full justify-between hover:bg-muted/50"
+        >
+          <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+            <History className="h-3 w-3" />
+            Histórico e Estatísticas
+          </span>
+          <ChevronDown
+            className={`h-4 w-4 text-muted-foreground transition-transform ${
+              showHistory ? 'rotate-180' : ''
+            }`}
+          />
+        </Button>
+
+        {/* Seção de histórico colapsável */}
+        {showHistory && (
+          <div className="space-y-3 pt-2">
+            {/* Tasks da semana passada */}
+            {previousWeekTasks.length > 0 && (
+              <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border-l-2 border-gray-400">
+                <p className="text-xs text-gray-700 dark:text-gray-300 font-medium mb-2 flex items-center gap-1">
+                  <History className="h-3 w-3" />
+                  Semana passada
+                </p>
+                <div className="space-y-1">
+                  {previousWeekTasks.map((task, index) => (
+                    <div
+                      key={index}
+                      className={`flex items-start gap-2 p-2 rounded-md ${
+                        task.status === 'concluida'
+                          ? 'bg-green-50 dark:bg-green-950/30'
+                          : ''
+                      }`}
                     >
-                      {task.status}
-                    </Badge>
+                      <div className="flex-1">
+                        <p className="text-sm text-foreground flex items-center gap-2">
+                          <span>
+                            {task.title}
+                            {task.demand?.title && (
+                              <span className="font-normal text-muted-foreground ml-1">
+                                ({task.demand.title})
+                              </span>
+                            )}
+                          </span>
+                          {task.status === 'concluida' && (
+                            <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Estatísticas dos últimos 30 dias */}
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 p-3 rounded-lg border border-green-200 dark:border-green-800">
+              <p className="text-xs text-green-700 dark:text-green-300 font-medium mb-2 flex items-center gap-1">
+                <TrendingUp className="h-3 w-3" />
+                Últimos 30 dias (exceto semana atual)
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                    <p className="text-lg font-bold text-green-600">{last30DaysStats.completed}</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Concluídas</p>
+                </div>
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <XCircle className="h-3.5 w-3.5 text-orange-500" />
+                    <p className="text-lg font-bold text-orange-500">{last30DaysStats.notCompleted}</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Pendentes</p>
+                </div>
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-1">
+                    <Calendar className="h-3.5 w-3.5 text-blue-600" />
+                    <p className="text-lg font-bold text-blue-600">{last30DaysStats.total}</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Total</p>
+                </div>
+              </div>
+              {last30DaysStats.total > 0 && (
+                <div className="mt-2 pt-2 border-t border-green-200 dark:border-green-800">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Taxa de conclusão</span>
+                    <span className="font-semibold text-green-700 dark:text-green-300">
+                      {Math.round((last30DaysStats.completed / last30DaysStats.total) * 100)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-1">
+                    <div
+                      className="bg-green-600 h-1.5 rounded-full transition-all"
+                      style={{ width: `${(last30DaysStats.completed / last30DaysStats.total) * 100}%` }}
+                    />
                   </div>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         )}
-
-        {/* Estatísticas dos últimos 30 dias */}
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 p-3 rounded-lg border border-green-200 dark:border-green-800">
-          <p className="text-xs text-green-700 dark:text-green-300 font-medium mb-2 flex items-center gap-1">
-            <TrendingUp className="h-3 w-3" />
-            Últimos 30 dias (exceto semana atual)
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1">
-                <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
-                <p className="text-lg font-bold text-green-600">{last30DaysStats.completed}</p>
-              </div>
-              <p className="text-xs text-muted-foreground">Concluídas</p>
-            </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1">
-                <XCircle className="h-3.5 w-3.5 text-orange-500" />
-                <p className="text-lg font-bold text-orange-500">{last30DaysStats.notCompleted}</p>
-              </div>
-              <p className="text-xs text-muted-foreground">Pendentes</p>
-            </div>
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-1">
-                <Calendar className="h-3.5 w-3.5 text-blue-600" />
-                <p className="text-lg font-bold text-blue-600">{last30DaysStats.total}</p>
-              </div>
-              <p className="text-xs text-muted-foreground">Total</p>
-            </div>
-          </div>
-          {last30DaysStats.total > 0 && (
-            <div className="mt-2 pt-2 border-t border-green-200 dark:border-green-800">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Taxa de conclusão</span>
-                <span className="font-semibold text-green-700 dark:text-green-300">
-                  {Math.round((last30DaysStats.completed / last30DaysStats.total) * 100)}%
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-1">
-                <div
-                  className="bg-green-600 h-1.5 rounded-full transition-all"
-                  style={{ width: `${(last30DaysStats.completed / last30DaysStats.total) * 100}%` }}
-                />
-              </div>
-            </div>
-          )}
-        </div>
       </CardContent>
     </Card>
   );

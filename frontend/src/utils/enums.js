@@ -172,7 +172,8 @@ export const DEMAND_CATEGORIES = {
   SERVICE_DESK: 'Service Desk',
   GENIUS: 'Genius',
   NITRO: 'Nitro',
-  AUTOBOT: 'Autobot'
+  AUTOBOT: 'Autobot',
+  MELHORIA_TECNICA: 'Melhoria Técnica'
 };
 
 export const DEMAND_CATEGORY_LABELS = {
@@ -182,7 +183,8 @@ export const DEMAND_CATEGORY_LABELS = {
   [DEMAND_CATEGORIES.SERVICE_DESK]: 'Service Desk',
   [DEMAND_CATEGORIES.GENIUS]: 'Genius',
   [DEMAND_CATEGORIES.NITRO]: 'Nitro',
-  [DEMAND_CATEGORIES.AUTOBOT]: 'Autobot'
+  [DEMAND_CATEGORIES.AUTOBOT]: 'Autobot',
+  [DEMAND_CATEGORIES.MELHORIA_TECNICA]: 'Melhoria Técnica',
 };
 
 // Alias para status ativo (backend usa 'ativa')

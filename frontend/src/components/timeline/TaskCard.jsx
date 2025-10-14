@@ -10,22 +10,11 @@ import { useDashboardData } from '@/hooks/useDashboardData';
 export const TaskCard = ({ task }) => {
   const { dashboardData } = useDashboardData();
 
-  console.log('TaskCard - task completa:', task);
-
-  // Busca info dos devs - assignedDevs é um array de { dev: Dev, devId: number } do backend
-  let devInfos = [];
-
-  if (task.assignedDevs && task.assignedDevs.length > 0) {
-    // Se tiver o relacionamento completo com dev
-    devInfos = task.assignedDevs.map(assignment => assignment.dev).filter(Boolean);
-  } else if (task.assignedDevs && task.assignedDevs.length > 0) {
-    // Fallback: se só tiver os IDs, busca dos devs do dashboard
-    const devIds = task.assignedDevs.map(a => a.devId || a);
-    devInfos = dashboardData.devs?.filter(dev => devIds.includes(dev.id)) || [];
-  }
-
-  console.log('TaskCard - devInfos processado:', devInfos);
-  console.log('TaskCard - demand:', task.demand);
+  // Backend retorna assignedDevs como array de TimelineTaskAssignment { id, devId, dev: Dev }
+  // Extrair os objetos dev diretamente
+  const devInfos = (task.assignedDevs || [])
+    .map(assignment => assignment.dev)
+    .filter(dev => dev !== null && dev !== undefined);
 
   // Iniciais do dev para avatar
   const getInitials = (name) => {
@@ -38,9 +27,9 @@ export const TaskCard = ({ task }) => {
   };
 
   const priorityLabels = {
-    'alta': '☝️ Alta',
-    'media': '👌 Média',
-    'baixa': '🤙 Baixa'
+    'alta': '🔴 Alta',
+    'media': '🟡 Média',
+    'baixa': '🟢 Baixa'
   };
 
   // Filtra highlights por tipo (vindo da relação com Highlight)
@@ -66,12 +55,12 @@ export const TaskCard = ({ task }) => {
             {/* Status Badge */}
             {task.status && (
               <Badge
-                variant={
-                  task.status === 'concluida' ? 'outline' :
-                    task.status === 'em-andamento' ? 'default' :
-                      'secondary'
-                }
-                className="text-xs rounded-full px-3 py-1 font-medium"
+                variant="outline"
+                className={`text-xs rounded-full px-3 py-1 font-medium ${
+                  task.status === 'concluida' ? 'bg-green-50 border-green-500 text-green-700' :
+                  task.status === 'em-andamento' ? 'bg-blue-50 border-blue-500 text-blue-700' :
+                  'bg-gray-50 border-gray-400 text-gray-700'
+                }`}
               >
                 {task.status === 'nao-iniciada' ? '⏸️ Não iniciada' :
                   task.status === 'em-andamento' ? '▶️ Em andamento' :
@@ -84,7 +73,9 @@ export const TaskCard = ({ task }) => {
                 variant={task.demand.priority === 'alta' ? 'destructive' : 'secondary'}
                 className="text-xs rounded-full px-3 py-1 font-medium"
               >
-                {priorityLabels[task.demand.priority]}
+                {task.demand.priority === 'alta' ? '🔴 Alta prioridade' :
+                 task.demand.priority === 'media' ? '🟡 Média prioridade' :
+                 '🟢 Baixa prioridade'}
               </Badge>
             )}
             {/* Category Badge */}

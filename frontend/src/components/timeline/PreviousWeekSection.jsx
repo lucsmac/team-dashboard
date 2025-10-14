@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyTaskPlaceholder } from './EmptyTaskPlaceholder';
+import { TaskCard } from './TaskCard';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -17,6 +18,7 @@ export const PreviousWeekSection = ({ data }) => {
     completed = 0,
     total = 0,
     highlights = [],
+    tasks = [],
     notes
   } = data || {};
 
@@ -33,6 +35,48 @@ export const PreviousWeekSection = ({ data }) => {
   const completionPercent = Math.round(completionRate * 100);
 
   const periodText = `${format(new Date(effectiveStartDate), 'd MMM', { locale: ptBR })} - ${format(new Date(effectiveEndDate), 'd MMM', { locale: ptBR })}`;
+
+  // Agrupar tasks por status e separar 4DX
+  const groupTasksByStatus = (taskList) => {
+    return {
+      concluida: taskList.filter(t => t.status === 'concluida'),
+      'em-andamento': taskList.filter(t => t.status === 'em-andamento'),
+      'nao-iniciada': taskList.filter(t => t.status === 'nao-iniciada')
+    };
+  };
+
+  const tasks4DX = tasks.filter(t => t.category === '4DX');
+  const otherTasks = tasks.filter(t => t.category !== '4DX');
+
+  const grouped4DX = groupTasksByStatus(tasks4DX);
+  const groupedOther = groupTasksByStatus(otherTasks);
+
+  // Helper para renderizar grupo de tasks por status
+  const renderStatusGroup = (status, taskList, label, icon, color) => {
+    if (taskList.length === 0) return null;
+
+    return (
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Badge
+            variant={status === 'concluida' ? 'default' : status === 'em-andamento' ? 'secondary' : 'outline'}
+            className={`text-xs font-semibold px-3 py-1 ${
+              status === 'concluida' ? 'bg-green-100 text-green-800 border-green-300' :
+              status === 'em-andamento' ? 'bg-blue-100 text-blue-800 border-blue-300' :
+              'bg-gray-100 text-gray-800 border-gray-300'
+            }`}
+          >
+            {icon} {label} ({taskList.length})
+          </Badge>
+        </div>
+        <div className="space-y-3 pl-4 border-l-2" style={{ borderColor: color }}>
+          {taskList.map((task) => (
+            <TaskCard key={task.id} task={task} />
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <Card className="relative border opacity-70 hover:opacity-100 transition-all duration-300 hover:shadow-lg rounded-xl overflow-hidden">
@@ -99,7 +143,61 @@ export const PreviousWeekSection = ({ data }) => {
         )}
 
         {isExpanded && (
-          <div className="space-y-4 pt-3 border-t">
+          <div className="space-y-6 pt-3 border-t">
+            {/* Tasks da semana */}
+            {tasks.length > 0 && (
+              <div className="space-y-5">
+                <h4 className="text-sm font-bold flex items-center gap-2 text-foreground">
+                  <span className="text-lg">📋</span>
+                  Tarefas da Semana
+                </h4>
+
+                {/* Seção 4DX */}
+                {tasks4DX.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 pb-2">
+                      <div className="h-px flex-1 bg-gradient-to-r from-blue-500/50 to-transparent"></div>
+                      <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-full">
+                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <span className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
+                          4DX - Foco Estratégico
+                        </span>
+                      </div>
+                      <div className="h-px flex-1 bg-gradient-to-l from-blue-500/50 to-transparent"></div>
+                    </div>
+
+                    <div className="space-y-5 pl-1">
+                      {renderStatusGroup('concluida', grouped4DX.concluida, 'Concluídas', '✅', '#22c55e')}
+                      {renderStatusGroup('em-andamento', grouped4DX['em-andamento'], 'Em Andamento', '▶️', '#3b82f6')}
+                      {renderStatusGroup('nao-iniciada', grouped4DX['nao-iniciada'], 'Não Iniciadas', '⏸️', '#9ca3af')}
+                    </div>
+                  </div>
+                )}
+
+                {/* Outras Demandas */}
+                {otherTasks.length > 0 && (
+                  <div className="space-y-4">
+                    {tasks4DX.length > 0 && (
+                      <div className="flex items-center gap-2 pb-2">
+                        <div className="h-px flex-1 bg-gradient-to-r from-muted to-transparent"></div>
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide px-2">
+                          Outras Demandas
+                        </span>
+                        <div className="h-px flex-1 bg-gradient-to-l from-muted to-transparent"></div>
+                      </div>
+                    )}
+
+                    <div className="space-y-5">
+                      {renderStatusGroup('concluida', groupedOther.concluida, 'Concluídas', '✅', '#22c55e')}
+                      {renderStatusGroup('em-andamento', groupedOther['em-andamento'], 'Em Andamento', '▶️', '#3b82f6')}
+                      {renderStatusGroup('nao-iniciada', groupedOther['nao-iniciada'], 'Não Iniciadas', '⏸️', '#9ca3af')}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Conquistas */}
             <div className="space-y-3">
               <h4 className="text-sm font-bold flex items-center gap-2">
                 <span className="text-lg">🎉</span>

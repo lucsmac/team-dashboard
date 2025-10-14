@@ -21,8 +21,11 @@ export const TeamDistribution = () => {
         priority: task.priority
       };
     }
-    task.assignedDevs?.forEach(devName => {
-      taskDistribution[key].devs.add(devName);
+    // assignedDevs agora é array de { id, devId, dev: {...} }
+    task.assignedDevs?.forEach(assignment => {
+      if (assignment.dev && assignment.dev.id) {
+        taskDistribution[key].devs.add(assignment.dev.id);
+      }
     });
   });
 
