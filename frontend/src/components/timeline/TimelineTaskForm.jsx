@@ -48,8 +48,8 @@ export default function TimelineTaskForm({ task, isOpen, onClose, onSave }) {
         status: task.status || 'nao-iniciada',
         devIds: task.assignedDevs?.map(a => a.dev.id) || [],
         demandId: task.demandId || '',
-        highlights: task.highlights?.filter(h => h.type === 'conquista').map(h => ({ text: h.text })) || [],
-        blockers: task.highlights?.filter(h => h.type === 'entrave').map(h => ({ text: h.text, severity: h.severity })) || []
+        highlights: task.highlights?.filter(h => h.type === 'achievements').map(h => ({ text: h.text })) || [],
+        blockers: task.highlights?.filter(h => h.type === 'blockers').map(h => ({ text: h.text, severity: h.severity })) || []
       });
     } else {
       // Modo criação - calcular semana atual (domingo a sábado)

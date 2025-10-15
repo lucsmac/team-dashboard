@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Calendar, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Plus, Edit2, Trash2, Calendar, CheckCircle, AlertTriangle, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { TimelineTaskDialog } from './TimelineTaskDialog';
@@ -99,6 +99,16 @@ export const TimelineTaskManager = ({ demandId }) => {
     return labels[weekType] || weekType;
   };
 
+  const toggleBlockerResolved = async (blockerId, currentStatus) => {
+    try {
+      await api.updateHighlight(blockerId, { resolved: !currentStatus });
+      await loadTasks();
+    } catch (error) {
+      console.error('Error toggling blocker resolved:', error);
+      alert('Erro ao atualizar entrave');
+    }
+  };
+
   if (loading) {
     return (
       <div className="text-sm text-muted-foreground py-4">
@@ -181,16 +191,39 @@ export const TimelineTaskManager = ({ demandId }) => {
 
               {/* Conquistas e Entraves */}
               <div className="space-y-1">
-                {task.highlights?.filter(h => h.type === 'conquista').slice(0, 2).map((h) => (
+                {task.highlights?.filter(h => h.type === 'achievements').slice(0, 2).map((h) => (
                   <div key={h.id} className="flex items-start gap-2 text-xs text-green-700 bg-green-50 p-2 rounded">
                     <CheckCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                     <span className="flex-1">{h.text}</span>
                   </div>
                 ))}
-                {task.highlights?.filter(h => h.type === 'entrave').slice(0, 2).map((h) => (
-                  <div key={h.id} className="flex items-start gap-2 text-xs text-red-700 bg-red-50 p-2 rounded">
+                {task.highlights?.filter(h => h.type === 'blockers').slice(0, 2).map((h) => (
+                  <div
+                    key={h.id}
+                    className={`flex items-start gap-2 text-xs p-2 rounded ${
+                      h.resolved
+                        ? 'text-gray-500 bg-gray-50 line-through opacity-60'
+                        : 'text-red-700 bg-red-50'
+                    }`}
+                  >
                     <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" />
                     <span className="flex-1">{h.text}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleBlockerResolved(h.id, h.resolved);
+                      }}
+                      className="h-5 w-5 p-0 hover:bg-transparent"
+                      title={h.resolved ? 'Marcar como não resolvido' : 'Marcar como resolvido'}
+                    >
+                      {h.resolved ? (
+                        <X className="h-3 w-3 text-gray-400" />
+                      ) : (
+                        <Check className="h-3 w-3 text-green-600" />
+                      )}
+                    </Button>
                   </div>
                 ))}
               </div>

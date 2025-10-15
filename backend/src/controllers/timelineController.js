@@ -196,9 +196,11 @@ export const timelineController = {
           highlights.map(h =>
             prisma.highlight.create({
               data: {
-                type: 'conquista',
+                type: 'achievements',
                 text: h.text,
-                timelineTaskId: task.id
+                timelineTaskId: task.id,
+                weekStart: new Date(weekStart),
+                weekEnd: new Date(weekEnd)
               }
             })
           )
@@ -211,10 +213,12 @@ export const timelineController = {
           blockers.map(b =>
             prisma.highlight.create({
               data: {
-                type: 'entrave',
+                type: 'blockers',
                 text: b.text,
                 severity: b.severity || 'alta',
-                timelineTaskId: task.id
+                timelineTaskId: task.id,
+                weekStart: new Date(weekStart),
+                weekEnd: new Date(weekEnd)
               }
             })
           )
@@ -305,7 +309,7 @@ export const timelineController = {
         await prisma.highlight.deleteMany({
           where: {
             timelineTaskId: id,
-            type: 'conquista'
+            type: 'achievements'
           }
         });
 
@@ -315,9 +319,11 @@ export const timelineController = {
             highlights.map(h =>
               prisma.highlight.create({
                 data: {
-                  type: 'conquista',
+                  type: 'achievements',
                   text: h.text,
-                  timelineTaskId: id
+                  timelineTaskId: id,
+                  weekStart: weekStart ? new Date(weekStart) : undefined,
+                  weekEnd: weekEnd ? new Date(weekEnd) : undefined
                 }
               })
             )
@@ -331,7 +337,7 @@ export const timelineController = {
         await prisma.highlight.deleteMany({
           where: {
             timelineTaskId: id,
-            type: 'entrave'
+            type: 'blockers'
           }
         });
 
@@ -341,10 +347,12 @@ export const timelineController = {
             blockers.map(b =>
               prisma.highlight.create({
                 data: {
-                  type: 'entrave',
+                  type: 'blockers',
                   text: b.text,
                   severity: b.severity || 'alta',
-                  timelineTaskId: id
+                  timelineTaskId: id,
+                  weekStart: weekStart ? new Date(weekStart) : undefined,
+                  weekEnd: weekEnd ? new Date(weekEnd) : undefined
                 }
               })
             )

@@ -44,8 +44,8 @@ export const TimelineTaskDialog = ({ isOpen, onClose, onSave, task, demandId }) 
         status: task.status || 'nao-iniciada',
         demandId: task.demandId || demandId || null,
         devIds: task.assignedDevs?.map(a => a.devId) || [],
-        achievements: task.highlights?.filter(h => h.type === 'conquista').map(h => h.text) || [],
-        blockers: task.highlights?.filter(h => h.type === 'entrave').map(h => ({ text: h.text, severity: h.severity || 'alta' })) || []
+        achievements: task.highlights?.filter(h => h.type === 'achievements').map(h => h.text) || [],
+        blockers: task.highlights?.filter(h => h.type === 'blockers').map(h => ({ text: h.text, severity: h.severity || 'alta' })) || []
       });
     } else {
       // Criação: valores padrão

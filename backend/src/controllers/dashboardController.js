@@ -10,7 +10,13 @@ export const dashboardController = {
         prisma.dev.findMany({ orderBy: { id: 'asc' } }),
         prisma.demand.findMany({ orderBy: { createdAt: 'desc' } }),
         prisma.delivery.findMany({ orderBy: { createdAt: 'desc' } }),
-        prisma.highlight.findMany({ orderBy: { createdAt: 'desc' } }),
+        prisma.highlight.findMany({
+          orderBy: { createdAt: 'desc' },
+          include: {
+            demand: true,
+            timelineTask: true
+          }
+        }),
         prisma.timelineTask.findMany({
           orderBy: { weekStart: 'desc' },
           include: { demand: true }

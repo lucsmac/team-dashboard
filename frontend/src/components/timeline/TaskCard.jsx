@@ -33,8 +33,8 @@ export const TaskCard = ({ task }) => {
   };
 
   // Filtra highlights por tipo (vindo da relação com Highlight)
-  const blockers = task.highlights?.filter(h => h.type === 'entrave') || [];
-  const achievements = task.highlights?.filter(h => h.type === 'conquista') || [];
+  const blockers = task.highlights?.filter(h => h.type === 'blockers') || [];
+  const achievements = task.highlights?.filter(h => h.type === 'achievements') || [];
 
   return (
     <Card className="group hover:shadow-xl hover:scale-[1.02] transition-all duration-300 border border-border/50 bg-white/80 backdrop-blur-sm rounded-xl overflow-hidden">
@@ -126,9 +126,16 @@ export const TaskCard = ({ task }) => {
 
         {/* Blockers - pastel sem gradiente */}
         {blockers.length > 0 && (
-          <div className="flex items-start gap-2 text-xs text-red-700 bg-red-50 p-3 rounded-lg border border-red-200">
+          <div className={`flex items-start gap-2 text-xs p-3 rounded-lg border ${
+            blockers[0].resolved
+              ? 'text-gray-500 bg-gray-50 border-gray-200 line-through opacity-60'
+              : 'text-red-700 bg-red-50 border-red-200'
+          }`}>
             <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
             <span className="font-medium">{blockers[0].text}</span>
+            {blockers[0].resolved && (
+              <span className="ml-auto text-[10px] text-gray-400">✓ Resolvido</span>
+            )}
           </div>
         )}
 

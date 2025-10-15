@@ -27,31 +27,21 @@ export default function HighlightForm({ highlight, highlightType, isOpen, onClos
     severity: 'media', // Para blockers
     type: 'info', // Para important
     achievementDate: '', // Para achievements
-    demandId: '', // Para achievements
-    timelineTaskId: '' // Para associar a task da timeline
+    demandId: '', // Para associar a demand
+    timelineTaskId: '', // Para associar a task da timeline
+    devIds: [], // Para associar a desenvolvedores
+    weekStart: '', // Data de início da semana
+    weekEnd: '' // Data de fim da semana
   });
-  const [timelineTasks, setTimelineTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Buscar timeline tasks quando o diálogo abre
-  useEffect(() => {
-    if (isOpen) {
-      fetch('http://localhost:5000/api/timeline')
-        .then(res => res.json())
-        .then(data => {
-          // API retorna objeto com current, previous, upcoming
-          // Combinar todas as tasks em um único array
-          const allTasks = [
-            ...(data.current || []),
-            ...(data.previous || []),
-            ...(data.upcoming || [])
-          ];
-          setTimelineTasks(allTasks);
-        })
-        .catch(err => console.error('Erro ao buscar tasks:', err));
-    }
-  }, [isOpen]);
+  // Extrair tasks da timeline do Context
+  const timelineTasks = dashboardData?.timeline ? [
+    ...(dashboardData.timeline.currentWeek?.tasks || []),
+    ...(dashboardData.timeline.previousWeek?.tasks || []),
+    ...(dashboardData.timeline.upcomingWeeks?.flatMap(w => w.plannedTasks || []) || [])
+  ] : [];
 
   useEffect(() => {
     if (highlight) {
@@ -63,20 +53,36 @@ export default function HighlightForm({ highlight, highlightType, isOpen, onClos
           ? new Date(highlight.achievementDate).toISOString().split('T')[0]
           : '',
         demandId: highlight.demandId || '',
-        timelineTaskId: highlight.timelineTaskId || ''
+        timelineTaskId: highlight.timelineTaskId || '',
+        devIds: highlight.devIds || [],
+        weekStart: highlight.weekStart
+          ? new Date(highlight.weekStart).toISOString().split('T')[0]
+          : '',
+        weekEnd: highlight.weekEnd
+          ? new Date(highlight.weekEnd).toISOString().split('T')[0]
+          : ''
       });
     } else {
+      // Valores padrão: semana atual
+      const currentWeek = dashboardData?.timeline?.currentWeek;
       setFormData({
         text: '',
         severity: 'media',
         type: 'info',
         achievementDate: '',
         demandId: '',
-        timelineTaskId: ''
+        timelineTaskId: '',
+        devIds: [],
+        weekStart: currentWeek?.startDate
+          ? new Date(currentWeek.startDate).toISOString().split('T')[0]
+          : '',
+        weekEnd: currentWeek?.endDate
+          ? new Date(currentWeek.endDate).toISOString().split('T')[0]
+          : ''
       });
     }
     setError(null);
-  }, [highlight, isOpen]);
+  }, [highlight, isOpen, dashboardData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -246,6 +252,30 @@ export default function HighlightForm({ highlight, highlightType, isOpen, onClos
             </>
           )}
 
+          {/* Período (Semana) */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="weekStart">Início da Semana *</Label>
+              <Input
+                id="weekStart"
+                type="date"
+                value={formData.weekStart}
+                onChange={(e) => handleChange('weekStart', e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="weekEnd">Fim da Semana *</Label>
+              <Input
+                id="weekEnd"
+                type="date"
+                value={formData.weekEnd}
+                onChange={(e) => handleChange('weekEnd', e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
           {/* Task da Timeline (para todos os tipos) */}
           <div className="space-y-2">
             <Label htmlFor="timelineTaskId">Task da Timeline (opcional)</Label>
@@ -275,9 +305,37 @@ export default function HighlightForm({ highlight, highlightType, isOpen, onClos
                 Limpar seleção
               </Button>
             )}
-            <p className="text-xs text-muted-foreground">
-              Se não associar a uma task, será exibido na semana baseado na data de criação
-            </p>
+          </div>
+
+          {/* Desenvolvedores */}
+          <div className="space-y-2">
+            <Label>Desenvolvedores Relacionados (opcional)</Label>
+            <div className="grid grid-cols-2 gap-2 p-3 border rounded-md max-h-40 overflow-y-auto">
+              {dashboardData?.devs?.map((dev) => (
+                <label
+                  key={dev.id}
+                  className="flex items-center space-x-2 cursor-pointer hover:bg-muted/50 p-2 rounded"
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.devIds.includes(dev.id)}
+                    onChange={(e) => {
+                      const newDevIds = e.target.checked
+                        ? [...formData.devIds, dev.id]
+                        : formData.devIds.filter(id => id !== dev.id);
+                      handleChange('devIds', newDevIds);
+                    }}
+                    className="rounded"
+                  />
+                  <span className="text-sm">{dev.name}</span>
+                </label>
+              ))}
+            </div>
+            {formData.devIds.length > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {formData.devIds.length} desenvolvedor(es) selecionado(s)
+              </p>
+            )}
           </div>
 
           <DialogFooter>

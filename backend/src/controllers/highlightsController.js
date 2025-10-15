@@ -61,7 +61,17 @@ export const highlightsController = {
   // POST /api/highlights - Criar novo highlight
   async create(req, res, next) {
     try {
-      const { type, text, severity, achievementDate, demandId, timelineTaskId } = req.body;
+      const {
+        type,
+        text,
+        severity,
+        achievementDate,
+        weekStart,
+        weekEnd,
+        devIds,
+        demandId,
+        timelineTaskId
+      } = req.body;
 
       if (!type || !text) {
         return res.status(400).json({ error: 'Type and text are required' });
@@ -79,6 +89,9 @@ export const highlightsController = {
           text,
           severity,
           achievementDate: achievementDate ? new Date(achievementDate) : null,
+          weekStart: weekStart ? new Date(weekStart) : null,
+          weekEnd: weekEnd ? new Date(weekEnd) : null,
+          devIds: devIds || [],
           demandId: demandId || null,
           timelineTaskId: timelineTaskId || null
         },
@@ -98,18 +111,44 @@ export const highlightsController = {
   async update(req, res, next) {
     try {
       const { id } = req.params;
-      const { type, text, severity, achievementDate, demandId, timelineTaskId } = req.body;
+      const {
+        type,
+        text,
+        severity,
+        achievementDate,
+        weekStart,
+        weekEnd,
+        devIds,
+        demandId,
+        timelineTaskId,
+        resolved
+      } = req.body;
+
+      const updateData = {
+        type,
+        text,
+        severity,
+        achievementDate: achievementDate ? new Date(achievementDate) : null,
+        weekStart: weekStart ? new Date(weekStart) : null,
+        weekEnd: weekEnd ? new Date(weekEnd) : null,
+        devIds: devIds !== undefined ? devIds : undefined,
+        demandId: demandId || null,
+        timelineTaskId: timelineTaskId || null
+      };
+
+      // Se resolved for true e ainda não estava resolvido, adicionar resolvedAt
+      if (resolved !== undefined) {
+        updateData.resolved = resolved;
+        if (resolved) {
+          updateData.resolvedAt = new Date();
+        } else {
+          updateData.resolvedAt = null;
+        }
+      }
 
       const highlight = await prisma.highlight.update({
         where: { id },
-        data: {
-          type,
-          text,
-          severity,
-          achievementDate: achievementDate ? new Date(achievementDate) : null,
-          demandId: demandId || null,
-          timelineTaskId: timelineTaskId || null
-        },
+        data: updateData,
         include: {
           demand: true,
           timelineTask: true
@@ -139,8 +178,9 @@ export const highlightsController = {
 
   // GET /api/highlights/week/:weekStart/:weekEnd - Buscar highlights de uma semana
   // Retorna highlights que estão:
-  // 1. Associados a tasks dessa semana
-  // 2. OU foram criados (createdAt) nessa semana
+  // 1. Têm weekStart/weekEnd que sobrepõem com a semana solicitada
+  // 2. OU associados a tasks dessa semana
+  // 3. OU foram criados (createdAt) nessa semana (se não tiverem weekStart/weekEnd definidos)
   async getByWeek(req, res, next) {
     try {
       const { weekStart, weekEnd } = req.params;
@@ -152,20 +192,34 @@ export const highlightsController = {
       const highlights = await prisma.highlight.findMany({
         where: {
           OR: [
-            // Highlights associados a tasks dessa semana
+            // Highlights com weekStart/weekEnd definidos que sobrepõem a semana solicitada
+            {
+              AND: [
+                { weekStart: { not: null } },
+                { weekEnd: { not: null } },
+                { weekStart: { lte: endDate } },
+                { weekEnd: { gte: startDate } }
+              ]
+            },
+            // OU highlights associados a tasks dessa semana
             {
               timelineTask: {
-                weekStart: { gte: startDate },
-                weekEnd: { lte: endDate }
+                weekStart: { lte: endDate },
+                weekEnd: { gte: startDate }
               }
             },
-            // OU highlights criados nessa semana
+            // OU highlights criados nessa semana (fallback para highlights antigos sem weekStart/weekEnd)
             {
-              createdAt: {
-                gte: startDate,
-                lte: endDate
-              },
-              timelineTaskId: null // Apenas os não associados a tasks
+              AND: [
+                { weekStart: null },
+                { weekEnd: null },
+                {
+                  createdAt: {
+                    gte: startDate,
+                    lte: endDate
+                  }
+                }
+              ]
             }
           ]
         },

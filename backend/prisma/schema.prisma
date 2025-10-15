@@ -66,6 +66,11 @@ model Highlight {
   text            String
   severity        String?
   achievementDate DateTime?     @map("achievement_date")
+  weekStart       DateTime?     @map("week_start")
+  weekEnd         DateTime?     @map("week_end")
+  devIds          Int[]         @map("dev_ids")
+  resolved        Boolean       @default(false)
+  resolvedAt      DateTime?     @map("resolved_at")
   demandId        String?       @map("demand_id")
   timelineTaskId  String?       @map("timeline_task_id")
   createdAt       DateTime      @default(now()) @map("created_at")
@@ -77,6 +82,9 @@ model Highlight {
   @@index([demandId])
   @@index([timelineTaskId])
   @@index([createdAt])
+  @@index([weekStart])
+  @@index([weekEnd])
+  @@index([resolved])
   @@map("highlights")
 }
 

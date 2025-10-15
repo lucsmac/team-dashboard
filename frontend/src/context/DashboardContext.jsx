@@ -28,7 +28,7 @@ export const DashboardProvider = ({ children }) => {
         // Pegar conquistas dos highlights
         const highlights = tasks.flatMap(t => {
           return (t.highlights || [])
-            .filter(h => h.type === 'conquista')
+            .filter(h => h.type === 'achievements')
             .map(h => ({ text: h.text }));
         });
 
@@ -69,9 +69,9 @@ export const DashboardProvider = ({ children }) => {
         const alerts = [];
 
         tasks.forEach(t => {
-          // Adicionar entraves (tipo 'entrave' nos highlights)
+          // Adicionar entraves (tipo 'blockers' nos highlights)
           (t.highlights || [])
-            .filter(h => h.type === 'entrave')
+            .filter(h => h.type === 'blockers')
             .forEach(h => {
               alerts.push({
                 text: `🚫 ${h.text}`,
