@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, FolderKanban, Star, ChevronLeft, Menu } from 'lucide-react';
+import { LayoutDashboard, Users, FolderKanban, Star, Calendar, ChevronLeft, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -28,6 +28,11 @@ const navigationItems = [
         title: 'Demandas',
         icon: FolderKanban,
         url: '/demands',
+      },
+      {
+        title: 'Roadmap',
+        icon: Calendar,
+        url: '/roadmap',
       },
       {
         title: 'Highlights',
