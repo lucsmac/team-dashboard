@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!-- Background com gradiente -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Fundo arredondado -->
+  <rect width="32" height="32" rx="6" fill="url(#bg-gradient)"/>
+
+  <!-- Ícone de pessoas/equipe -->
+  <g stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- Pessoa 1 (esquerda) -->
+    <circle cx="11" cy="11" r="2.5"/>
+    <path d="M7 21v-1.5c0-1.5 1-2.5 2.5-2.5h3c.8 0 1.5.4 2 1"/>
+
+    <!-- Pessoa 2 (direita) -->
+    <circle cx="21" cy="11" r="2.5"/>
+    <path d="M25 21v-1.5c0-1.5-1-2.5-2.5-2.5h-3c-.8 0-1.5.4-2 1"/>
+
+    <!-- Detalhe de dashboard (linhas) -->
+    <path d="M11 26h10" stroke-width="1.5" opacity="0.6"/>
+    <path d="M13 23h6" stroke-width="1.5" opacity="0.6"/>
+  </g>
+</svg>
