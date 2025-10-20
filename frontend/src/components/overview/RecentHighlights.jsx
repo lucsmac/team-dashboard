@@ -14,7 +14,7 @@ export const RecentHighlights = () => {
   const recentAchievements = dashboardData.highlights.achievements.slice(0, 2);
 
   return (
-    <Card>
+    <Card id="highlights-section">
       <CardHeader>
         <CardTitle>Alertas & Conquistas</CardTitle>
         <CardDescription>Status recente do time</CardDescription>
@@ -22,7 +22,7 @@ export const RecentHighlights = () => {
       <CardContent className="space-y-4">
         {/* Entraves */}
         {recentBlockers.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-2" id="blockers-section">
             <div className="flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-red-600" />
               <h4 className="text-sm font-medium">Entraves</h4>
@@ -42,7 +42,7 @@ export const RecentHighlights = () => {
 
         {/* Conquistas */}
         {recentAchievements.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-2" id="achievements-section">
             <div className="flex items-center gap-2">
               <Award className="h-4 w-4 text-green-600" />
               <h4 className="text-sm font-medium">Conquistas</h4>

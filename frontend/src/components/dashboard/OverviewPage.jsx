@@ -15,17 +15,21 @@ export const OverviewPage = () => {
       {/* Métricas principais */}
       <MetricsCards />
 
-      {/* Timeline semanal - NOVO */}
+      {/* Grid com Distribuição do Time e Alocações */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TeamDistribution />
+        <AllocationOverview />
+      </div>
+
+      <Separator className="my-8" />
+
+      {/* Timeline semanal */}
       <WeeklyTimeline />
 
       <Separator className="my-8" />
 
-      {/* Grid com 3 colunas */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <TeamDistribution />
-        <UpcomingDeliveries />
-        <AllocationOverview />
-      </div>
+      {/* Próximas entregas */}
+      <UpcomingDeliveries />
 
       {/* Highlights recentes */}
       <RecentHighlights />
