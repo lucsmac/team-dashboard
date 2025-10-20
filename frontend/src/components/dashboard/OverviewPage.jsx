@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { MetricsCards } from '../overview/MetricsCards';
 import { TeamDistribution } from '../overview/TeamDistribution';
 import { UpcomingDeliveries } from '../overview/UpcomingDeliveries';
@@ -5,11 +7,22 @@ import { RecentHighlights } from '../overview/RecentHighlights';
 import { AllocationOverview } from '../overview/AllocationOverview';
 import { WeeklyTimeline } from '../timeline/WeeklyTimeline';
 import { Separator } from '@/components/ui/separator';
+import { useDashboard } from '@/context/DashboardContext';
 
 /**
  * Página de visão geral / resumo executivo
  */
 export const OverviewPage = () => {
+  const location = useLocation();
+  const { loadTimeline } = useDashboard();
+
+  useEffect(() => {
+    // Recarregar timeline quando entrar na aba overview
+    if (location.pathname === '/overview' || location.pathname === '/') {
+      loadTimeline();
+    }
+  }, [location.pathname, loadTimeline]);
+
   return (
     <div className="space-y-6">
       {/* Métricas principais */}

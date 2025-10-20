@@ -3,11 +3,13 @@ import { Users, TrendingUp, AlertCircle, Award } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { api } from '@/services/api';
+import { useLocation } from 'react-router-dom';
 
 /**
  * Cards de métricas principais do dashboard
  */
 export const MetricsCards = () => {
+  const location = useLocation();
   const {
     dashboardData,
     getActiveDemandsCount,
@@ -20,8 +22,11 @@ export const MetricsCards = () => {
   const [loadingAllocations, setLoadingAllocations] = useState(true);
 
   useEffect(() => {
-    loadAllocationStats();
-  }, []);
+    // Recarregar dados quando entrar na aba overview
+    if (location.pathname === '/overview' || location.pathname === '/') {
+      loadAllocationStats();
+    }
+  }, [location.pathname]);
 
   const loadAllocationStats = async () => {
     try {

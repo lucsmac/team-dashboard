@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CalendarClock, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '@/services/api';
 import { ALLOCATION_TYPE_LABELS, ALLOCATION_TYPE_EMOJIS, ALLOCATION_TYPE_COLORS } from '@/utils/enums';
 
@@ -12,12 +12,16 @@ import { ALLOCATION_TYPE_LABELS, ALLOCATION_TYPE_EMOJIS, ALLOCATION_TYPE_COLORS 
  */
 export function AllocationOverview() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadStats();
-  }, []);
+    // Recarregar dados quando entrar na aba overview
+    if (location.pathname === '/overview' || location.pathname === '/') {
+      loadStats();
+    }
+  }, [location.pathname]);
 
   const loadStats = async () => {
     try {
