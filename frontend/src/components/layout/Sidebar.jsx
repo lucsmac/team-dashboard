@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, FolderKanban, Star, Calendar, ChevronLeft, Menu } from 'lucide-react';
+import { LayoutDashboard, Users, FolderKanban, Star, Calendar, ChevronLeft, Menu, CalendarClock, Link2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -18,6 +18,11 @@ const navigationItems = [
         title: 'Time',
         icon: Users,
         url: '/team',
+      },
+      {
+        title: 'Alocação',
+        icon: CalendarClock,
+        url: '/allocation',
       },
     ],
   },
@@ -38,6 +43,16 @@ const navigationItems = [
         title: 'Highlights',
         icon: Star,
         url: '/highlights',
+      },
+    ],
+  },
+  {
+    group: 'Integrações',
+    items: [
+      {
+        title: 'Jira',
+        icon: Link2,
+        url: '/jira/integrations',
       },
     ],
   },

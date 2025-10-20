@@ -2,6 +2,7 @@ import { MetricsCards } from '../overview/MetricsCards';
 import { TeamDistribution } from '../overview/TeamDistribution';
 import { UpcomingDeliveries } from '../overview/UpcomingDeliveries';
 import { RecentHighlights } from '../overview/RecentHighlights';
+import { AllocationOverview } from '../overview/AllocationOverview';
 import { WeeklyTimeline } from '../timeline/WeeklyTimeline';
 import { Separator } from '@/components/ui/separator';
 
@@ -19,10 +20,11 @@ export const OverviewPage = () => {
 
       <Separator className="my-8" />
 
-      {/* Grid com 2 colunas */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Grid com 3 colunas */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <TeamDistribution />
         <UpcomingDeliveries />
+        <AllocationOverview />
       </div>
 
       {/* Highlights recentes */}

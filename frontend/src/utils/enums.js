@@ -193,3 +193,30 @@ if (!DEMAND_STATUS.ATIVA) {
   DEMAND_STATUS.ATIVA = DEMAND_STATUS_ATIVA;
   DEMAND_STATUS_LABELS[DEMAND_STATUS_ATIVA] = 'Ativa';
 }
+
+// Tipos de alocação semanal
+export const ALLOCATION_TYPES = {
+  ROADMAP: 'roadmap',
+  SERVICE_DESK: 'service-desk',
+  GENIUS: 'genius'
+};
+
+export const ALLOCATION_TYPE_LABELS = {
+  [ALLOCATION_TYPES.ROADMAP]: 'Roadmap',
+  [ALLOCATION_TYPES.SERVICE_DESK]: 'Service Desk',
+  [ALLOCATION_TYPES.GENIUS]: 'Genius'
+};
+
+// Cores por tipo de alocação
+export const ALLOCATION_TYPE_COLORS = {
+  [ALLOCATION_TYPES.ROADMAP]: 'bg-blue-500 text-white',
+  [ALLOCATION_TYPES.SERVICE_DESK]: 'bg-orange-500 text-white',
+  [ALLOCATION_TYPES.GENIUS]: 'bg-green-500 text-white'
+};
+
+// Emojis por tipo de alocação
+export const ALLOCATION_TYPE_EMOJIS = {
+  [ALLOCATION_TYPES.ROADMAP]: '🔵',
+  [ALLOCATION_TYPES.SERVICE_DESK]: '🟠',
+  [ALLOCATION_TYPES.GENIUS]: '🟢'
+};

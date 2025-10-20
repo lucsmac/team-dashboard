@@ -10,17 +10,19 @@ datasource db {
 }
 
 model Dev {
-  id            Int                      @id @default(autoincrement())
-  name          String
-  color         String
-  role          String
-  seniority     String
-  lastWeek      String?                  @map("last_week")
-  thisWeek      String?                  @map("this_week")
-  nextWeek      String?                  @map("next_week")
-  createdAt     DateTime                 @default(now()) @map("created_at")
-  updatedAt     DateTime                 @updatedAt @map("updated_at")
-  timelineTasks TimelineTaskAssignment[]
+  id              Int                      @id @default(autoincrement())
+  name            String
+  color           String
+  role            String
+  seniority       String
+  lastWeek        String?                  @map("last_week")
+  thisWeek        String?                  @map("this_week")
+  nextWeek        String?                  @map("next_week")
+  weeklyCapacity  Int                      @default(40) @map("weekly_capacity")
+  createdAt       DateTime                 @default(now()) @map("created_at")
+  updatedAt       DateTime                 @updatedAt @map("updated_at")
+  timelineTasks   TimelineTaskAssignment[]
+  weekAllocations DevWeekAllocation[]
 
   @@index([role])
   @@index([seniority])
@@ -128,4 +130,78 @@ model Config {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("config")
+}
+
+model DevWeekAllocation {
+  id                String   @id @default(uuid())
+  devId             Int      @map("dev_id")
+  weekStart         DateTime @map("week_start")
+  weekEnd           DateTime @map("week_end")
+  allocationType    String   @map("allocation_type")
+  allocationPercent Int      @default(100) @map("allocation_percent")
+  notes             String?
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  dev Dev @relation(fields: [devId], references: [id], onDelete: Cascade)
+
+  @@unique([devId, weekStart, allocationType])
+  @@index([devId])
+  @@index([weekStart])
+  @@index([allocationType])
+  @@map("dev_week_allocations")
+}
+
+model JiraIntegration {
+  id         String    @id @default(uuid())
+  name       String    @unique
+  jiraUrl    String    @map("jira_url")
+  projectKey String    @map("project_key")
+  boardId    String    @map("board_id")
+  apiToken   String    @map("api_token")
+  email      String
+  isActive   Boolean   @default(true) @map("is_active")
+  lastSyncAt DateTime? @map("last_sync_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  @@index([name])
+  @@index([isActive])
+  @@map("jira_integrations")
+}
+
+model JiraIssue {
+  id                   String    @id @default(uuid())
+  jiraIssueId          String    @map("jira_issue_id")
+  jiraIssueKey         String    @unique @map("jira_issue_key")
+  integrationName      String    @map("integration_name")
+  summary              String
+  description          String?
+  issueType            String    @map("issue_type")
+  status               String
+  priority             String?
+  assigneeEmail        String?   @map("assignee_email")
+  assigneeName         String?   @map("assignee_name")
+  assignedDevId        Int?      @map("assigned_dev_id")
+  createdAt            DateTime  @map("created_at")
+  updatedAt            DateTime  @map("updated_at")
+  resolutionDate       DateTime? @map("resolution_date")
+  timeToFirstResponse  Int?      @map("time_to_first_response")
+  timeInProgress       Int?      @map("time_in_progress")
+  timeToResolution     Int?      @map("time_to_resolution")
+  estimatedHours       Float?    @map("estimated_hours")
+  loggedHours          Float?    @map("logged_hours")
+  complexity           String?
+  storyPoints          Int?      @map("story_points")
+  labels               String[]
+  components           String[]
+  lastSyncedAt         DateTime  @default(now()) @map("last_synced_at")
+
+  @@index([integrationName])
+  @@index([status])
+  @@index([assigneeEmail])
+  @@index([assignedDevId])
+  @@index([createdAt])
+  @@index([resolutionDate])
+  @@map("jira_issues")
 }

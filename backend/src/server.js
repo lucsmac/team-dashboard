@@ -11,6 +11,8 @@ import highlightsRouter from './routes/highlights.js';
 import timelineRouter from './routes/timeline.js';
 import configRouter from './routes/config.js';
 import dashboardRouter from './routes/dashboard.js';
+import devAllocationsRouter from './routes/devAllocations.js';
+import jiraIntegrationRouter from './routes/jiraIntegration.js';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler.js';
@@ -52,6 +54,8 @@ app.use('/api/highlights', highlightsRouter);
 app.use('/api/timeline', timelineRouter);
 app.use('/api/config', configRouter);
 app.use('/api/dashboard', dashboardRouter);
+app.use('/api/dev-allocations', devAllocationsRouter);
+app.use('/api/jira/integrations', jiraIntegrationRouter);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);

@@ -6,6 +6,8 @@ import { TeamPage } from './components/dashboard/TeamPage';
 import { DemandsPage } from './components/dashboard/DemandsPage';
 import { HighlightsPage } from './components/dashboard/HighlightsPage';
 import { RoadmapPage } from './components/dashboard/RoadmapPage';
+import { AllocationPage } from './components/dashboard/AllocationPage';
+import { JiraConfigPage } from './components/jira/JiraConfigPage';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
 import { ErrorMessage } from './components/common/ErrorMessage';
 
@@ -29,9 +31,11 @@ function AppContent() {
         <Route path="/" element={<Navigate to="/overview" replace />} />
         <Route path="/overview" element={<OverviewPage />} />
         <Route path="/team" element={<TeamPage />} />
+        <Route path="/allocation" element={<AllocationPage />} />
         <Route path="/demands" element={<DemandsPage />} />
         <Route path="/roadmap" element={<RoadmapPage />} />
         <Route path="/highlights" element={<HighlightsPage />} />
+        <Route path="/jira/integrations" element={<JiraConfigPage />} />
       </Routes>
     </AppShell>
   );

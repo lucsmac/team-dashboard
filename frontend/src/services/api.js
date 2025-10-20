@@ -247,6 +247,75 @@ export const api = {
     });
   },
 
+  // ========== DEV ALLOCATIONS ==========
+
+  async getAllocationsByWeek(weekStart) {
+    return request(`/dev-allocations?weekStart=${weekStart}`);
+  },
+
+  async getDevAllocationByWeek(devId, weekStart) {
+    return request(`/dev-allocations/dev/${devId}/week/${weekStart}`);
+  },
+
+  async getDevAllocationHistory(devId, months = 3) {
+    return request(`/dev-allocations/dev/${devId}/history?months=${months}`);
+  },
+
+  async upsertDevAllocation(data) {
+    return request('/dev-allocations', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteDevAllocation(id) {
+    return request(`/dev-allocations/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async getCurrentWeekAllocationStats() {
+    return request('/dev-allocations/stats/current-week');
+  },
+
+  // ========== JIRA INTEGRATIONS ==========
+
+  async getJiraIntegrations() {
+    return request('/jira/integrations');
+  },
+
+  async getJiraIntegration(id) {
+    return request(`/jira/integrations/${id}`);
+  },
+
+  async createJiraIntegration(data) {
+    return request('/jira/integrations', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async updateJiraIntegration(id, data) {
+    return request(`/jira/integrations/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteJiraIntegration(id) {
+    return request(`/jira/integrations/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async testJiraIntegration(id) {
+    return request(`/jira/integrations/${id}/test`);
+  },
+
+  async getJiraIntegrationMetrics(id) {
+    return request(`/jira/integrations/${id}/metrics`);
+  },
+
   // ========== HEALTH CHECK ==========
 
   async healthCheck() {
