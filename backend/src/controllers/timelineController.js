@@ -1,45 +1,5 @@
 import { prisma } from '../server.js';
-
-// Função auxiliar para obter o domingo da semana atual
-function getCurrentWeekStart() {
-  const today = new Date();
-  const dayOfWeek = today.getDay();
-  const sunday = new Date(today);
-  sunday.setDate(today.getDate() - dayOfWeek);
-  sunday.setHours(0, 0, 0, 0);
-  return sunday;
-}
-
-// Função auxiliar para obter o sábado da semana atual
-function getCurrentWeekEnd() {
-  const sunday = getCurrentWeekStart();
-  const saturday = new Date(sunday);
-  saturday.setDate(sunday.getDate() + 6);
-  saturday.setHours(23, 59, 59, 999);
-  return saturday;
-}
-
-// Função para determinar o tipo de semana baseado nas datas
-function getWeekType(weekStart, weekEnd) {
-  const currentWeekStart = getCurrentWeekStart();
-  const currentWeekEnd = getCurrentWeekEnd();
-
-  const taskStart = new Date(weekStart);
-  const taskEnd = new Date(weekEnd);
-
-  // Se a task termina antes da semana atual começar
-  if (taskEnd < currentWeekStart) {
-    return 'previous';
-  }
-
-  // Se a task começa depois da semana atual terminar
-  if (taskStart > currentWeekEnd) {
-    return 'upcoming';
-  }
-
-  // Caso contrário, é da semana atual
-  return 'current';
-}
+import { getWeekType } from '../utils/weekUtils.js';
 
 export const timelineController = {
   // GET /api/timeline - Listar todas as tarefas (organizadas por weekType calculado)
@@ -64,7 +24,7 @@ export const timelineController = {
       const tasksWithWeekType = tasks.map(task => ({
         ...task,
         weekType: getWeekType(task.weekStart, task.weekEnd)
-      }));
+      })).filter(t => t.weekType !== null); // Filtrar tarefas fora das 3 semanas
 
       // Organizar por weekType calculado
       const byWeekType = {
@@ -137,7 +97,7 @@ export const timelineController = {
           ...task,
           weekType: getWeekType(task.weekStart, task.weekEnd)
         }))
-        .filter(task => task.weekType === weekType);
+        .filter(task => task.weekType !== null && task.weekType === weekType);
 
       res.json(tasks);
     } catch (error) {

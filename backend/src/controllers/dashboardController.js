@@ -1,5 +1,6 @@
 import { prisma } from '../server.js';
 import { enrichDevsWithWeekSummaries } from '../utils/devUtils.js';
+import { getWeekType } from '../utils/weekUtils.js';
 
 export const dashboardController = {
   // GET /api/dashboard - Carregar dashboard completo (otimizado)
@@ -19,13 +20,28 @@ export const dashboardController = {
         }),
         prisma.timelineTask.findMany({
           orderBy: { weekStart: 'desc' },
-          include: { demand: true }
+          include: {
+            demand: true,
+            assignedDevs: {
+              include: {
+                dev: true
+              }
+            }
+          }
         }),
         prisma.config.findMany()
       ]);
 
-      // Enriquecer devs com resumos automáticos
-      const enrichedDevs = enrichDevsWithWeekSummaries(devs, timelineTasks);
+      // Calcular weekType para cada task e filtrar apenas as que estão nas 3 semanas exibidas
+      const tasksWithWeekType = timelineTasks
+        .map(task => ({
+          ...task,
+          weekType: getWeekType(task.weekStart, task.weekEnd)
+        }))
+        .filter(t => t.weekType !== null);
+
+      // Enriquecer devs com resumos automáticos (usando tasks com weekType calculado)
+      const enrichedDevs = enrichDevsWithWeekSummaries(devs, tasksWithWeekType);
 
       // Organizar demands por categoria
       const demandsByCategory = demands.reduce((acc, demand) => {
@@ -43,11 +59,11 @@ export const dashboardController = {
         important: highlights.filter(h => h.type === 'important')
       };
 
-      // Organizar timeline por weekType
+      // Organizar timeline por weekType (já calculado acima)
       const timelineByWeek = {
-        current: timelineTasks.filter(t => t.weekType === 'current'),
-        previous: timelineTasks.filter(t => t.weekType === 'previous'),
-        upcoming: timelineTasks.filter(t => t.weekType === 'upcoming')
+        current: tasksWithWeekType.filter(t => t.weekType === 'current'),
+        previous: tasksWithWeekType.filter(t => t.weekType === 'previous'),
+        upcoming: tasksWithWeekType.filter(t => t.weekType === 'upcoming')
       };
 
       // Converter configs para objeto

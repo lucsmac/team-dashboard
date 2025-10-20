@@ -44,8 +44,11 @@ export function generateWeekSummary(tasks) {
  */
 export function enrichDevWithWeekSummaries(dev, allTimelineTasks) {
   // Filtrar tasks onde este dev está alocado
+  // assignedDevs é um array de TimelineTaskAssignment que tem { dev, devId }
   const devTasks = allTimelineTasks.filter(task =>
-    task.assignedDevs && task.assignedDevs.includes(dev.name)
+    task.assignedDevs && task.assignedDevs.some(assignment =>
+      assignment.devId === dev.id || assignment.dev?.id === dev.id
+    )
   );
 
   // Separar por tipo de semana
