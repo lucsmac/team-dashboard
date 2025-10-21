@@ -1,5 +1,6 @@
 import { prisma } from '../server.js';
 import { enrichDevsWithWeekSummaries, generateWeekSummary } from '../utils/devUtils.js';
+import { getWeekType } from '../utils/weekUtils.js';
 
 export const devsController = {
   // GET /api/devs - Listar todos os desenvolvedores
@@ -12,10 +13,15 @@ export const devsController = {
       // Buscar todas as timeline tasks para enriquecer devs
       const timelineTasks = await prisma.timelineTask.findMany({
         select: {
-          weekType: true,
+          weekStart: true,
+          weekEnd: true,
           title: true,
-          progress: true,
-          assignedDevs: true
+          status: true,
+          assignedDevs: {
+            include: {
+              dev: true
+            }
+          }
         }
       });
 
@@ -43,10 +49,15 @@ export const devsController = {
       // Buscar timeline tasks para enriquecer
       const timelineTasks = await prisma.timelineTask.findMany({
         where: {
-          assignedDevs: { has: dev.name }
+          assignedDevs: {
+            some: {
+              devId: parseInt(id)
+            }
+          }
         },
         select: {
-          weekType: true,
+          weekStart: true,
+          weekEnd: true,
           title: true,
           progress: true,
           assignedDevs: true,
@@ -62,16 +73,22 @@ export const devsController = {
         }
       });
 
+      // Calcular weekType para cada task
+      const tasksWithWeekType = timelineTasks.map(t => ({
+        ...t,
+        weekType: getWeekType(t.weekStart, t.weekEnd)
+      })).filter(t => t.weekType !== null);
+
       // Enriquecer dev com resumos e tasks
       const enrichedDev = {
         ...dev,
-        lastWeek: dev.lastWeek || generateWeekSummary(timelineTasks.filter(t => t.weekType === 'previous')),
-        thisWeek: dev.thisWeek || generateWeekSummary(timelineTasks.filter(t => t.weekType === 'current')),
-        nextWeek: dev.nextWeek || generateWeekSummary(timelineTasks.filter(t => t.weekType === 'upcoming')),
+        lastWeek: dev.lastWeek || generateWeekSummary(tasksWithWeekType.filter(t => t.weekType === 'previous')),
+        thisWeek: dev.thisWeek || generateWeekSummary(tasksWithWeekType.filter(t => t.weekType === 'current')),
+        nextWeek: dev.nextWeek || generateWeekSummary(tasksWithWeekType.filter(t => t.weekType === 'upcoming')),
         tasks: {
-          previous: timelineTasks.filter(t => t.weekType === 'previous'),
-          current: timelineTasks.filter(t => t.weekType === 'current'),
-          upcoming: timelineTasks.filter(t => t.weekType === 'upcoming')
+          previous: tasksWithWeekType.filter(t => t.weekType === 'previous'),
+          current: tasksWithWeekType.filter(t => t.weekType === 'current'),
+          upcoming: tasksWithWeekType.filter(t => t.weekType === 'upcoming')
         }
       };
 

@@ -146,18 +146,22 @@ export const DashboardProvider = ({ children }) => {
 
   // Carregar dados do backend na inicialização
   const loadDashboard = useCallback(async () => {
+    console.log('🔄 loadDashboard called');
     try {
       setLoading(true);
       setError(null);
 
+      console.log('📡 Calling api.loadDashboard()...');
       const data = await api.loadDashboard();
+      console.log('✅ Dashboard data received:', data);
       setDashboardData(data);
 
       // Carregar timeline separadamente usando loadTimeline
       try {
+        console.log('📡 Calling loadTimeline()...');
         await loadTimeline();
       } catch (timelineErr) {
-        console.warn('Timeline não disponível:', timelineErr);
+        console.warn('⚠️ Timeline não disponível:', timelineErr);
         // Se timeline falhar, usar do initialData
         setDashboardData(prev => ({
           ...prev,
@@ -165,16 +169,17 @@ export const DashboardProvider = ({ children }) => {
         }));
       }
     } catch (err) {
-      console.error('Error loading dashboard:', err);
+      console.error('❌ Error loading dashboard:', err);
       setError(err);
 
       // Fallback para dados iniciais se o backend estiver offline
       if (err instanceof ApiError && err.status === 0) {
-        console.warn('Backend offline, usando dados iniciais...');
+        console.warn('⚠️ Backend offline, usando dados iniciais...');
         setDashboardData(initialData);
       }
     } finally {
       setLoading(false);
+      console.log('✓ loadDashboard finished');
     }
   }, [loadTimeline]);
 
@@ -511,6 +516,14 @@ export const DashboardProvider = ({ children }) => {
 
   const value = {
     dashboardData,
+    // Desempacotar dashboardData para acesso direto às propriedades
+    timeline: dashboardData?.timeline,
+    devs: dashboardData?.devs,
+    demands: dashboardData?.demands,
+    deliveries: dashboardData?.deliveries,
+    highlights: dashboardData?.highlights,
+    week: dashboardData?.week,
+    priorities: dashboardData?.priorities,
     loading,
     error,
     editMode,

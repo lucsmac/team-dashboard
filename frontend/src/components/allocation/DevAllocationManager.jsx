@@ -170,7 +170,7 @@ export function DevAllocationManager() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                Alocação Semanal do Time
+                Alocação semanal do time
               </CardTitle>
               <CardDescription>
                 Gerencie onde cada dev está alocado durante a semana

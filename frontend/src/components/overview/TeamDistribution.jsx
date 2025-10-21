@@ -45,7 +45,7 @@ export const TeamDistribution = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Distribuição do Time</CardTitle>
+        <CardTitle>Distribuição do time</CardTitle>
         <CardDescription>Alocação atual por task</CardDescription>
       </CardHeader>
       <CardContent>
@@ -66,11 +66,10 @@ export const TeamDistribution = () => {
                 </div>
                 <div className="w-full bg-secondary rounded-full h-2">
                   <div
-                    className={`h-2 rounded-full transition-all ${
-                      task.priority === 'alta' ? 'bg-red-500' :
-                      task.priority === 'media' ? 'bg-yellow-500' :
-                      'bg-green-500'
-                    }`}
+                    className={`h-2 rounded-full transition-all ${task.priority === 'alta' ? 'bg-red-500' :
+                        task.priority === 'media' ? 'bg-yellow-500' :
+                          'bg-green-500'
+                      }`}
                     style={{ width: `${percentage}%` }}
                   />
                 </div>

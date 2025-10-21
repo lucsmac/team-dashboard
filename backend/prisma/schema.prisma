@@ -40,6 +40,7 @@ model Demand {
   value         String?
   details       String?
   links         String[]
+  completedAt   DateTime?      @map("completed_at")
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
   highlights    Highlight[]
@@ -48,6 +49,7 @@ model Demand {
   @@index([category])
   @@index([status])
   @@index([stage])
+  @@index([completedAt])
   @@map("demands")
 }
 

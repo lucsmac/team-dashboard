@@ -40,7 +40,7 @@ export function AllocationOverview() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarClock className="h-5 w-5" />
-            Alocação do Time
+            Alocação do time
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -56,7 +56,7 @@ export function AllocationOverview() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarClock className="h-5 w-5" />
-            Alocação do Time
+            Alocação do time
           </CardTitle>
           <CardDescription>Nenhuma alocação cadastrada esta semana</CardDescription>
         </CardHeader>
@@ -90,8 +90,8 @@ export function AllocationOverview() {
         {Object.entries(stats.byType).map(([type, data]) => {
           const percentage = Math.round((data.count / stats.totalAllocations) * 100);
           const colorClass = type === 'roadmap' ? 'bg-blue-500' :
-                           type === 'service-desk' ? 'bg-orange-500' :
-                           'bg-green-500';
+            type === 'service-desk' ? 'bg-orange-500' :
+              'bg-green-500';
 
           return (
             <div key={type} className="space-y-2">

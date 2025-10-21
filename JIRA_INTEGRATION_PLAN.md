@@ -212,7 +212,7 @@ No `OverviewPage.jsx`, adicionar card:
 ```javascript
 // Card: Alocação do Time Esta Semana
 {
-  title: "Alocação do Time",
+  title: "Alocação do time",
   content: (
     <div className="space-y-2">
       <div className="flex justify-between">

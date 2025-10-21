@@ -10,6 +10,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    include: ['recharts'],
+  },
   server: {
     host: '0.0.0.0',  // Expose to Docker network
     port: 5173,

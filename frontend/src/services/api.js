@@ -2,7 +2,10 @@
  * API Service - Substitui localStorage por chamadas HTTP ao backend
  */
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+// Use caminho relativo para aproveitar o proxy do Vite
+// Em dev: /api -> proxy para http://backend:5000/api
+// Em prod: /api -> mesmo domínio
+const API_URL = '/api';
 
 class ApiError extends Error {
   constructor(message, status, data) {
@@ -124,6 +127,10 @@ export const api = {
     return request(`/demands/${id}`, {
       method: 'DELETE',
     });
+  },
+
+  async getRecentCompletedDemands(days = 7) {
+    return request(`/demands/recent-completed/${days}`);
   },
 
   // ========== DELIVERIES ==========

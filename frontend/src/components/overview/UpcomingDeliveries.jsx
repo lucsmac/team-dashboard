@@ -25,7 +25,7 @@ export const UpcomingDeliveries = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Próximas Entregas</CardTitle>
+        <CardTitle>Próximas entregas</CardTitle>
         <CardDescription>Tarefas planejadas para as próximas semanas</CardDescription>
       </CardHeader>
       <CardContent>
@@ -62,7 +62,7 @@ export const UpcomingDeliveries = () => {
                             className="text-xs"
                           >
                             {task.priority === 'alta' ? '🔴 Alta' :
-                             task.priority === 'media' ? '🟡 Média' : '🟢 Baixa'}
+                              task.priority === 'media' ? '🟡 Média' : '🟢 Baixa'}
                           </Badge>
                         )}
                       </div>
