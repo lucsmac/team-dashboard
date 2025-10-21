@@ -1,16 +1,16 @@
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users } from 'lucide-react';
 
 /**
- * Gráfico de barras horizontais mostrando distribuição de tarefas por desenvolvedor
+ * Gráfico de barras horizontais comparando tarefas por desenvolvedor (semana anterior vs atual)
  */
 export const TasksByDeveloperChart = ({ data }) => {
   // Formato esperado de data:
   // [
-  //   { name: 'Edu', tasks: 5, color: '#ef4444' },
-  //   { name: 'João', tasks: 4, color: '#3b82f6' },
-  //   { name: 'Lucas', tasks: 3, color: '#22c55e' },
+  //   { name: 'Edu', previous: 4, current: 5, color: '#ef4444' },
+  //   { name: 'João', previous: 3, current: 4, color: '#3b82f6' },
+  //   { name: 'Lucas', previous: 2, current: 3, color: '#22c55e' },
   //   ...
   // ]
 
@@ -19,18 +19,31 @@ export const TasksByDeveloperChart = ({ data }) => {
       const data = payload[0].payload;
       return (
         <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
-          <p className="font-semibold text-gray-900">{data.name}</p>
-          <p className="text-sm text-gray-600">
-            {data.tasks} {data.tasks === 1 ? 'tarefa' : 'tarefas'}
-          </p>
+          <p className="font-semibold text-gray-900 mb-2">{data.name}</p>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded" style={{ backgroundColor: '#94a3b8' }}></div>
+              <p className="text-sm text-gray-600">
+                Semana anterior: {data.previous || 0} {data.previous === 1 ? 'tarefa' : 'tarefas'}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded" style={{ backgroundColor: '#3b82f6' }}></div>
+              <p className="text-sm text-gray-600">
+                Semana atual: {data.current || 0} {data.current === 1 ? 'tarefa' : 'tarefas'}
+              </p>
+            </div>
+          </div>
         </div>
       );
     }
     return null;
   };
 
-  // Ordenar por número de tarefas (decrescente)
-  const sortedData = [...data].sort((a, b) => b.tasks - a.tasks);
+  // Ordenar por total de tarefas (decrescente)
+  const sortedData = [...data].sort((a, b) =>
+    (b.previous + b.current) - (a.previous + a.current)
+  );
 
   return (
     <Card>
@@ -40,11 +53,11 @@ export const TasksByDeveloperChart = ({ data }) => {
           Tarefas por desenvolvedor
         </CardTitle>
         <CardDescription>
-          Número de tarefas atribuídas a cada desenvolvedor
+          Comparação entre semana anterior e semana atual
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={Math.max(300, sortedData.length * 40)}>
+        <ResponsiveContainer width="100%" height={Math.max(300, sortedData.length * 50)}>
           <BarChart
             data={sortedData}
             layout="vertical"
@@ -64,17 +77,25 @@ export const TasksByDeveloperChart = ({ data }) => {
               width={80}
             />
             <Tooltip content={<CustomTooltip />} />
+            <Legend
+              wrapperStyle={{ fontSize: '12px' }}
+              iconType="rect"
+              formatter={(value) => {
+                return value === 'previous' ? 'Semana anterior' : 'Semana atual';
+              }}
+            />
             <Bar
-              dataKey="tasks"
+              dataKey="previous"
+              fill="#94a3b8"
               radius={[0, 4, 4, 0]}
-            >
-              {sortedData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={entry.color || '#3b82f6'}
-                />
-              ))}
-            </Bar>
+              name="previous"
+            />
+            <Bar
+              dataKey="current"
+              fill="#3b82f6"
+              radius={[0, 4, 4, 0]}
+              name="current"
+            />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>

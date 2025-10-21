@@ -118,8 +118,9 @@ export const useChartData = () => {
   }, [timeline]);
 
   // Dados para o gráfico de pizza (tasks por categoria)
+  // Retorna dados para ambas as semanas
   const tasksByCategoryData = useMemo(() => {
-    if (!demands) return [];
+    if (!timeline) return { previous: [], current: [] };
 
     const categoryColors = {
       '4DX': '#3b82f6',
@@ -128,56 +129,86 @@ export const useChartData = () => {
       'Projetos Especiais': '#f59e0b'
     };
 
-    const categoryCounts = {};
-
-    Object.entries(demands).forEach(([category, categoryDemands]) => {
-      if (Array.isArray(categoryDemands)) {
-        categoryCounts[category] = categoryDemands.length;
+    // Helper para contar categorias de um array de tasks
+    const countCategories = (tasks) => {
+      const categoryCounts = {};
+      if (tasks && Array.isArray(tasks)) {
+        tasks.forEach(task => {
+          const category = task.category || task.demand?.category || 'Outros';
+          categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+        });
       }
-    });
+      return Object.entries(categoryCounts)
+        .map(([name, value]) => ({
+          name,
+          value,
+          color: categoryColors[name] || '#6b7280'
+        }))
+        .filter(item => item.value > 0)
+        .sort((a, b) => b.value - a.value);
+    };
 
-    return Object.entries(categoryCounts)
-      .map(([name, value]) => ({
-        name,
-        value,
-        color: categoryColors[name] || '#6b7280'
-      }))
-      .filter(item => item.value > 0)
-      .sort((a, b) => b.value - a.value);
-  }, [demands]);
+    return {
+      previous: countCategories(timeline.previousWeek?.tasks),
+      current: countCategories(timeline.currentWeek?.tasks)
+    };
+  }, [timeline]);
 
   // Dados para o gráfico de barras horizontais (tasks por desenvolvedor)
+  // Compara semana anterior vs semana atual
   const tasksByDeveloperData = useMemo(() => {
-    if (!timeline?.currentWeek?.tasks || !devs) return [];
+    if (!devs) return [];
 
     const devTaskCounts = {};
 
+    // Contar tarefas da semana anterior
+    if (timeline?.previousWeek?.tasks) {
+      timeline.previousWeek.tasks.forEach(task => {
+        if (task.assignedDevs && Array.isArray(task.assignedDevs)) {
+          task.assignedDevs.forEach(assignedDev => {
+            const devName = assignedDev?.dev?.name || assignedDev?.name || String(assignedDev);
+            if (devName) {
+              if (!devTaskCounts[devName]) {
+                devTaskCounts[devName] = { previous: 0, current: 0 };
+              }
+              devTaskCounts[devName].previous += 1;
+            }
+          });
+        }
+      });
+    }
+
     // Contar tarefas da semana atual
-    timeline.currentWeek.tasks.forEach(task => {
-      if (task.assignedDevs && Array.isArray(task.assignedDevs)) {
-        task.assignedDevs.forEach(assignedDev => {
-          // assignedDev é um objeto { id, devId, dev: { id, name, ... } }
-          const devName = assignedDev?.dev?.name || assignedDev?.name || String(assignedDev);
-          if (devName) {
-            devTaskCounts[devName] = (devTaskCounts[devName] || 0) + 1;
-          }
-        });
-      }
-    });
+    if (timeline?.currentWeek?.tasks) {
+      timeline.currentWeek.tasks.forEach(task => {
+        if (task.assignedDevs && Array.isArray(task.assignedDevs)) {
+          task.assignedDevs.forEach(assignedDev => {
+            const devName = assignedDev?.dev?.name || assignedDev?.name || String(assignedDev);
+            if (devName) {
+              if (!devTaskCounts[devName]) {
+                devTaskCounts[devName] = { previous: 0, current: 0 };
+              }
+              devTaskCounts[devName].current += 1;
+            }
+          });
+        }
+      });
+    }
 
     // Mapear para os dados do gráfico incluindo cores dos devs
     return Object.entries(devTaskCounts)
-      .map(([name, tasks]) => {
+      .map(([name, counts]) => {
         const dev = devs.find(d => d.name === name);
         return {
           name,
-          tasks,
+          previous: counts.previous,
+          current: counts.current,
           color: dev?.color?.includes('bg-')
             ? getColorFromTailwind(dev.color)
             : '#3b82f6'
         };
       })
-      .sort((a, b) => b.tasks - a.tasks);
+      .sort((a, b) => (b.previous + b.current) - (a.previous + a.current));
   }, [timeline, devs]);
 
   return {
