@@ -24,7 +24,7 @@ export const HighlightsPage = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingHighlight, setEditingHighlight] = useState(null);
   const [highlightType, setHighlightType] = useState('blockers');
-  const [selectedWeek, setSelectedWeek] = useState('current');
+  const [selectedWeek, setSelectedWeek] = useState('all');
 
   // Extrair semanas disponíveis da timeline
   const availableWeeks = useMemo(() => {
@@ -76,7 +76,8 @@ export const HighlightsPage = () => {
     const weekEnd = new Date(week.endDate);
 
     return items.filter(item => {
-      if (!item.weekStart || !item.weekEnd) return false;
+      // Items sem data de semana sempre aparecem (para não esconder conquistas antigas)
+      if (!item.weekStart || !item.weekEnd) return true;
 
       const itemStart = new Date(item.weekStart);
       const itemEnd = new Date(item.weekEnd);

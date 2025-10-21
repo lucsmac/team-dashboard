@@ -207,50 +207,49 @@ export default function HighlightForm({ highlight, highlightType, isOpen, onClos
           )}
 
           {highlightType === 'achievements' && (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="achievementDate">Data da Conquista</Label>
-                <Input
-                  id="achievementDate"
-                  type="date"
-                  value={formData.achievementDate}
-                  onChange={(e) => handleChange('achievementDate', e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="demandId">Demanda Relacionada</Label>
-                <Select
-                  value={formData.demandId || undefined}
-                  onValueChange={(value) => handleChange('demandId', value)}
-                >
-                  <SelectTrigger id="demandId">
-                    <SelectValue placeholder="Selecione uma demanda (opcional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(dashboardData.demands).map(([category, demands]) =>
-                      demands.map((demand) => (
-                        <SelectItem key={demand.id} value={demand.id}>
-                          [{category}] {demand.title}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-                {formData.demandId && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleChange('demandId', '')}
-                    className="text-xs text-muted-foreground"
-                  >
-                    Limpar seleção
-                  </Button>
-                )}
-              </div>
-            </>
+            <div className="space-y-2">
+              <Label htmlFor="achievementDate">Data da Conquista</Label>
+              <Input
+                id="achievementDate"
+                type="date"
+                value={formData.achievementDate}
+                onChange={(e) => handleChange('achievementDate', e.target.value)}
+              />
+            </div>
           )}
+
+          {/* Demanda Relacionada - disponível para todos os tipos */}
+          <div className="space-y-2">
+            <Label htmlFor="demandId">Demanda Relacionada</Label>
+            <Select
+              value={formData.demandId || undefined}
+              onValueChange={(value) => handleChange('demandId', value)}
+            >
+              <SelectTrigger id="demandId">
+                <SelectValue placeholder="Selecione uma demanda (opcional)" />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(dashboardData.demands).map(([category, demands]) =>
+                  demands.map((demand) => (
+                    <SelectItem key={demand.id} value={demand.id}>
+                      [{category}] {demand.title}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+            {formData.demandId && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => handleChange('demandId', '')}
+                className="text-xs text-muted-foreground"
+              >
+                Limpar seleção
+              </Button>
+            )}
+          </div>
 
           {/* Período (Semana) */}
           <div className="grid grid-cols-2 gap-4">

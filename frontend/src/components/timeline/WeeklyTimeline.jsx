@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { PreviousWeekSection } from './PreviousWeekSection';
 import { CurrentWeekSection } from './CurrentWeekSection';
 import { UpcomingWeeksSection } from './UpcomingWeeksSection';
@@ -13,6 +13,7 @@ export const WeeklyTimeline = () => {
   const { addTimelineTask } = useDashboard();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [isExpanded, setIsExpanded] = useState(false);
   const { timeline } = dashboardData;
 
   console.log('WeeklyTimeline - dashboardData:', dashboardData);
@@ -63,66 +64,98 @@ export const WeeklyTimeline = () => {
       </div>
 
       <div className="relative">
-        <div className="hidden lg:block">
-          <div className="grid gap-8 relative" style={{ gridTemplateColumns: '1fr 1.5fr 1fr' }}>
-            <div className="absolute top-8 left-0 right-0 h-px bg-border" style={{ zIndex: 0 }} />
+        {/* Container com altura limitada quando contraído */}
+        <div className={`relative transition-all duration-500 ease-in-out ${
+          isExpanded ? 'max-h-none' : 'max-h-[500px] overflow-hidden'
+        }`}>
+          <div className="hidden lg:block">
+            <div className="grid gap-8 relative" style={{ gridTemplateColumns: '1fr 1.5fr 1fr' }}>
+              <div className="absolute top-8 left-0 right-0 h-px bg-border" style={{ zIndex: 0 }} />
+
+              {timeline.previousWeek?.startDate && (
+                <div className="absolute top-8 left-[14.3%] -translate-x-1/2 -translate-y-1/2 z-10">
+                  <div className="w-3 h-3 bg-muted-foreground rounded-full border-2 border-background shadow" />
+                </div>
+              )}
+
+              {timeline.currentWeek?.startDate && (
+                <div className="absolute top-8 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+                  <div className="w-4 h-4 bg-foreground rounded-full border-2 border-background shadow-md" />
+                </div>
+              )}
+
+              {timeline.upcomingWeeks?.[0]?.startDate && (
+                <div className="absolute top-8 left-[85.7%] -translate-x-1/2 -translate-y-1/2 z-10">
+                  <div className="w-3 h-3 bg-muted rounded-full border-2 border-background shadow" />
+                </div>
+              )}
+
+              <div className="pt-16">
+                <PreviousWeekSection data={timeline.previousWeek || { highlights: [] }} />
+              </div>
+
+              <div className="pt-16">
+                <CurrentWeekSection data={timeline.currentWeek || { tasks: [] }} />
+              </div>
+
+              <div className="pt-16">
+                <UpcomingWeeksSection data={timeline.upcomingWeeks?.[0] || { plannedTasks: [] }} />
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:hidden space-y-8 relative pl-8">
+            <div className="absolute left-4 top-8 bottom-8 w-px bg-border -z-10" />
 
             {timeline.previousWeek?.startDate && (
-              <div className="absolute top-8 left-[14.3%] -translate-x-1/2 -translate-y-1/2 z-10">
-                <div className="w-3 h-3 bg-muted-foreground rounded-full border-2 border-background shadow" />
-              </div>
+              <div className="absolute left-4 top-14 w-3 h-3 bg-muted-foreground rounded-full -translate-x-1/2 border-2 border-background shadow" />
             )}
-
             {timeline.currentWeek?.startDate && (
-              <div className="absolute top-8 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
-                <div className="w-4 h-4 bg-foreground rounded-full border-2 border-background shadow-md" />
-              </div>
+              <div className="absolute left-4 top-[calc(33.33%+4rem)] w-4 h-4 bg-foreground rounded-full -translate-x-1/2 border-2 border-background shadow-md z-10" />
             )}
-
             {timeline.upcomingWeeks?.[0]?.startDate && (
-              <div className="absolute top-8 left-[85.7%] -translate-x-1/2 -translate-y-1/2 z-10">
-                <div className="w-3 h-3 bg-muted rounded-full border-2 border-background shadow" />
-              </div>
+              <div className="absolute left-4 bottom-14 w-3 h-3 bg-muted rounded-full -translate-x-1/2 border-2 border-background shadow" />
             )}
 
-            <div className="pt-16">
+            <div>
               <PreviousWeekSection data={timeline.previousWeek || { highlights: [] }} />
             </div>
 
-            <div className="pt-16">
+            <div>
               <CurrentWeekSection data={timeline.currentWeek || { tasks: [] }} />
             </div>
 
-            <div className="pt-16">
+            <div>
               <UpcomingWeeksSection data={timeline.upcomingWeeks?.[0] || { plannedTasks: [] }} />
             </div>
           </div>
+
+          {/* Efeito degradê quando contraído */}
+          {!isExpanded && (
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/90 to-transparent pointer-events-none" />
+          )}
         </div>
 
-        <div className="lg:hidden space-y-8 relative pl-8">
-          <div className="absolute left-4 top-8 bottom-8 w-px bg-border -z-10" />
-
-          {timeline.previousWeek?.startDate && (
-            <div className="absolute left-4 top-14 w-3 h-3 bg-muted-foreground rounded-full -translate-x-1/2 border-2 border-background shadow" />
-          )}
-          {timeline.currentWeek?.startDate && (
-            <div className="absolute left-4 top-[calc(33.33%+4rem)] w-4 h-4 bg-foreground rounded-full -translate-x-1/2 border-2 border-background shadow-md z-10" />
-          )}
-          {timeline.upcomingWeeks?.[0]?.startDate && (
-            <div className="absolute left-4 bottom-14 w-3 h-3 bg-muted rounded-full -translate-x-1/2 border-2 border-background shadow" />
-          )}
-
-          <div>
-            <PreviousWeekSection data={timeline.previousWeek || { highlights: [] }} />
-          </div>
-
-          <div>
-            <CurrentWeekSection data={timeline.currentWeek || { tasks: [] }} />
-          </div>
-
-          <div>
-            <UpcomingWeeksSection data={timeline.upcomingWeeks?.[0] || { plannedTasks: [] }} />
-          </div>
+        {/* Botão Ver mais / Ver menos */}
+        <div className="flex justify-center mt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="gap-2 shadow-sm hover:shadow-md transition-all"
+          >
+            {isExpanded ? (
+              <>
+                <ChevronUp className="h-4 w-4" />
+                Ver menos
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-4 w-4" />
+                Ver mais
+              </>
+            )}
+          </Button>
         </div>
       </div>
 
