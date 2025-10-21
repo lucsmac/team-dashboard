@@ -26,9 +26,17 @@ export function AllocationOverview() {
   const loadStats = async () => {
     try {
       const data = await api.getCurrentWeekAllocationStats();
+      console.log('📊 AllocationOverview - Stats carregadas:', data);
       setStats(data);
     } catch (error) {
-      console.error('Erro ao carregar stats de alocação:', error);
+      console.error('❌ AllocationOverview - Erro ao carregar stats:', error);
+      console.error('Detalhes do erro:', {
+        message: error.message,
+        status: error.status,
+        data: error.data
+      });
+      // Definir stats vazias para exibir mensagem adequada
+      setStats({ totalAllocations: 0, uniqueDevs: 0, byType: {} });
     } finally {
       setLoading(false);
     }

@@ -8,12 +8,14 @@ import { AllocationOverview } from '../overview/AllocationOverview';
 import { RecentCompletedDemands } from '../overview/RecentCompletedDemands';
 import { WeeklyTimeline } from '../timeline/WeeklyTimeline';
 import { Separator } from '@/components/ui/separator';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useDashboard } from '@/context/DashboardContext';
 import { WeeklyCompletionChart } from '../charts/WeeklyCompletionChart';
 import { TasksByStatusChart } from '../charts/TasksByStatusChart';
 import { TasksByCategoryChart } from '../charts/TasksByCategoryChart';
 import { TasksByDeveloperChart } from '../charts/TasksByDeveloperChart';
 import { useChartData } from '@/hooks/useChartData';
+import { BarChart3 } from 'lucide-react';
 
 /**
  * Página de visão geral / resumo executivo
@@ -36,48 +38,73 @@ export const OverviewPage = () => {
   }, [location.pathname, loadTimeline]);
 
   return (
-    <div className="space-y-6">
-      {/* Métricas principais */}
-      <MetricsCards />
+    <div className="space-y-8">
+      {/* ========== SEÇÃO 1: ATENÇÃO IMEDIATA ========== */}
+      <section>
+        <MetricsCards />
+      </section>
 
-      {/* Grid com Distribuição do Time e Alocações */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <TeamDistribution />
-        <AllocationOverview />
-      </div>
+      <section>
+        <RecentHighlights />
+      </section>
 
       <Separator className="my-8" />
 
-      {/* Gráficos de análise */}
-      <div className="space-y-6">
-        {/* Gráfico de linha de conclusão */}
-        <WeeklyCompletionChart data={weeklyCompletionData} />
+      {/* ========== SEÇÃO 2: TIMELINE & ENTREGAS ========== */}
+      <section>
+        <h2 className="text-2xl font-bold mb-6">Timeline & Entregas</h2>
+        <div className="space-y-6">
+          <WeeklyTimeline />
 
-        {/* Grid com 2 gráficos */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <TasksByStatusChart data={tasksByStatusData} />
-          <TasksByCategoryChart data={tasksByCategoryData} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <UpcomingDeliveries />
+            <RecentCompletedDemands />
+          </div>
         </div>
-
-        {/* Gráfico de tarefas por desenvolvedor */}
-        <TasksByDeveloperChart data={tasksByDeveloperData} />
-      </div>
+      </section>
 
       <Separator className="my-8" />
 
-      {/* Timeline semanal */}
-      <WeeklyTimeline />
+      {/* ========== SEÇÃO 3: VISÃO DO TIME ========== */}
+      <section>
+        <h2 className="text-2xl font-bold mb-6">Visão do Time</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <TeamDistribution />
+          <AllocationOverview />
+        </div>
+      </section>
 
       <Separator className="my-8" />
 
-      {/* Demandas entregues nos últimos 7 dias */}
-      <RecentCompletedDemands />
+      {/* ========== SEÇÃO 4: ANÁLISES E TENDÊNCIAS ========== */}
+      <section>
+        <Accordion type="single" collapsible defaultValue="charts">
+          <AccordionItem value="charts" className="border-none">
+            <AccordionTrigger className="text-2xl font-bold hover:no-underline pb-6">
+              <div className="flex items-center gap-3">
+                <BarChart3 className="h-6 w-6 text-blue-500" />
+                <span>Análises e Tendências</span>
+                <span className="text-sm font-normal text-muted-foreground ml-2">
+                  (4 gráficos)
+                </span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="space-y-6 pt-2">
+              {/* Gráfico de linha de conclusão */}
+              <WeeklyCompletionChart data={weeklyCompletionData} />
 
-      {/* Próximas entregas */}
-      <UpcomingDeliveries />
+              {/* Grid com 2 gráficos */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <TasksByStatusChart data={tasksByStatusData} />
+                <TasksByCategoryChart data={tasksByCategoryData} />
+              </div>
 
-      {/* Highlights recentes */}
-      <RecentHighlights />
+              {/* Gráfico de tarefas por desenvolvedor */}
+              <TasksByDeveloperChart data={tasksByDeveloperData} />
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </section>
     </div>
   );
 };

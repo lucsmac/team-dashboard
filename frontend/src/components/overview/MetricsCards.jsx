@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Users, TrendingUp, AlertCircle, Award } from 'lucide-react';
+import { Users, TrendingUp, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { api } from '@/services/api';
@@ -14,8 +14,8 @@ export const MetricsCards = () => {
     dashboardData,
     getActiveDemandsCount,
     getPlannedDemandsCount,
-    getBlockersCount,
-    getAchievementsCount
+    getCompletedDemandsCount,
+    getBlockedDemandsCount
   } = useDashboardData();
 
   const [allocationStats, setAllocationStats] = useState(null);
@@ -31,9 +31,17 @@ export const MetricsCards = () => {
   const loadAllocationStats = async () => {
     try {
       const data = await api.getCurrentWeekAllocationStats();
+      console.log('📊 Stats de alocação carregadas:', data);
       setAllocationStats(data);
     } catch (error) {
-      console.error('Erro ao carregar stats de alocação:', error);
+      console.error('❌ Erro ao carregar stats de alocação:', error);
+      console.error('Detalhes do erro:', {
+        message: error.message,
+        status: error.status,
+        data: error.data
+      });
+      // Definir stats vazias para evitar erro no render
+      setAllocationStats({ uniqueDevs: 0, byType: {} });
     } finally {
       setLoadingAllocations(false);
     }
@@ -53,14 +61,6 @@ export const MetricsCards = () => {
       })
       .join(' ') : '';
 
-  // Função para rolar até uma seção específica
-  const scrollToSection = (sectionId) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
   const metrics = [
     {
       title: 'Devs focados',
@@ -68,8 +68,7 @@ export const MetricsCards = () => {
       subtitle: allocationDetail || `${utilization}% utilização`,
       icon: Users,
       color: 'text-blue-600',
-      bgColor: 'bg-muted/50',
-      clickable: false
+      bgColor: 'bg-muted/50'
     },
     {
       title: 'Demandas ativas',
@@ -77,28 +76,23 @@ export const MetricsCards = () => {
       subtitle: `${getPlannedDemandsCount()} planejadas`,
       icon: TrendingUp,
       color: 'text-green-600',
-      bgColor: 'bg-muted/50',
-      clickable: false
+      bgColor: 'bg-muted/50'
     },
     {
-      title: 'Entraves',
-      value: getBlockersCount(),
-      subtitle: 'requerem atenção',
-      icon: AlertCircle,
-      color: 'text-red-600',
-      bgColor: 'bg-muted/50',
-      clickable: true,
-      onClick: () => scrollToSection('blockers-section')
+      title: 'Concluídas',
+      value: getCompletedDemandsCount(),
+      subtitle: 'entregas realizadas',
+      icon: CheckCircle2,
+      color: 'text-emerald-600',
+      bgColor: 'bg-muted/50'
     },
     {
-      title: 'Conquistas',
-      value: getAchievementsCount(),
-      subtitle: 'esta semana',
-      icon: Award,
-      color: 'text-foreground',
-      bgColor: 'bg-muted/50',
-      clickable: true,
-      onClick: () => scrollToSection('achievements-section')
+      title: 'Bloqueadas',
+      value: getBlockedDemandsCount(),
+      subtitle: 'requerem ação',
+      icon: AlertTriangle,
+      color: 'text-orange-600',
+      bgColor: 'bg-muted/50'
     }
   ];
 
@@ -109,10 +103,7 @@ export const MetricsCards = () => {
         return (
           <Card
             key={metric.title}
-            className={`transition-all hover:shadow-lg hover:-translate-y-1 ${
-              metric.clickable ? 'cursor-pointer' : ''
-            }`}
-            onClick={metric.clickable ? metric.onClick : undefined}
+            className="transition-all hover:shadow-lg hover:-translate-y-1"
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">

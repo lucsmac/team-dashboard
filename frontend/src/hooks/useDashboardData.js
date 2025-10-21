@@ -51,6 +51,14 @@ export const useDashboardData = () => {
     return context.dashboardData.highlights.achievements.length;
   };
 
+  const getCompletedDemandsCount = () => {
+    return getDemandsByStatus('concluido').length;
+  };
+
+  const getBlockedDemandsCount = () => {
+    return getDemandsByStatus('bloqueado').length;
+  };
+
   return {
     ...context,
     // Helpers adicionais
@@ -63,6 +71,8 @@ export const useDashboardData = () => {
     getActiveDemandsCount,
     getPlannedDemandsCount,
     getBlockersCount,
-    getAchievementsCount
+    getAchievementsCount,
+    getCompletedDemandsCount,
+    getBlockedDemandsCount
   };
 };

@@ -13,61 +13,100 @@ export const RecentHighlights = () => {
   const recentBlockers = dashboardData.highlights.blockers.slice(0, 2);
   const recentAchievements = dashboardData.highlights.achievements.slice(0, 2);
 
+  // Helper para buscar demand por ID
+  const getDemand = (demandId) => {
+    if (!dashboardData?.demands) return null;
+
+    for (const category in dashboardData.demands) {
+      const demand = dashboardData.demands[category].find(d => d.id === demandId);
+      if (demand) return { ...demand, category };
+    }
+    return null;
+  };
+
   return (
-    <Card id="highlights-section">
-      <CardHeader>
-        <CardTitle>Alertas & Conquistas</CardTitle>
-        <CardDescription>Status recente do time</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Entraves */}
-        {recentBlockers.length > 0 && (
-          <div className="space-y-2" id="blockers-section">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-red-600" />
-              <h4 className="text-sm font-medium">Entraves</h4>
-              <Badge variant="destructive" className="text-xs">
-                {dashboardData.highlights.blockers.length}
-              </Badge>
-            </div>
-            {recentBlockers.map((blocker) => (
-              <Alert key={blocker.id} variant="destructive" className="py-2">
-                <AlertDescription className="text-xs">
-                  {blocker.text}
-                </AlertDescription>
-              </Alert>
-            ))}
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Card de Entraves */}
+      <Card id="blockers-section">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-red-600" />
+            <CardTitle>Entraves</CardTitle>
+            <Badge variant="destructive" className="text-xs ml-auto">
+              {dashboardData.highlights.blockers.length}
+            </Badge>
           </div>
-        )}
+          <CardDescription>Requerem atenção imediata</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {recentBlockers.length > 0 ? (
+            <div className="space-y-2">
+              {recentBlockers.map((blocker) => {
+                const demand = blocker.demandId ? getDemand(blocker.demandId) : null;
 
-        {/* Conquistas */}
-        {recentAchievements.length > 0 && (
-          <div className="space-y-2" id="achievements-section">
-            <div className="flex items-center gap-2">
-              <Award className="h-4 w-4 text-green-600" />
-              <h4 className="text-sm font-medium">Conquistas</h4>
-              <Badge variant="outline" className="text-xs">
-                {dashboardData.highlights.achievements.length}
-              </Badge>
+                return (
+                  <Alert key={blocker.id} variant="destructive" className="py-2">
+                    <AlertDescription className="text-xs">
+                      {demand && (
+                        <div className="font-medium text-red-700 mb-1">
+                          {demand.category}: {demand.title}
+                        </div>
+                      )}
+                      <div>{blocker.text}</div>
+                    </AlertDescription>
+                  </Alert>
+                );
+              })}
             </div>
-            {recentAchievements.map((achievement) => (
-              <Alert key={achievement.id} className="py-2 border-green-500/20 bg-green-500/5">
-                <AlertDescription className="text-xs text-foreground">
-                  {achievement.text}
-                </AlertDescription>
-              </Alert>
-            ))}
-          </div>
-        )}
+          ) : (
+            <div className="text-center py-6 text-muted-foreground">
+              <Info className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Nenhum entrave</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* Estado vazio */}
-        {recentBlockers.length === 0 && recentAchievements.length === 0 && (
-          <div className="text-center py-6 text-muted-foreground">
-            <Info className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">Nenhum alerta ou conquista recente</p>
+      {/* Card de Conquistas */}
+      <Card id="achievements-section">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Award className="h-5 w-5 text-green-600" />
+            <CardTitle>Conquistas</CardTitle>
+            <Badge variant="outline" className="text-xs ml-auto">
+              {dashboardData.highlights.achievements.length}
+            </Badge>
           </div>
-        )}
-      </CardContent>
-    </Card>
+          <CardDescription>Celebrando o progresso</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {recentAchievements.length > 0 ? (
+            <div className="space-y-2">
+              {recentAchievements.map((achievement) => {
+                const demand = achievement.demandId ? getDemand(achievement.demandId) : null;
+
+                return (
+                  <Alert key={achievement.id} className="py-2 border-green-500/20 bg-green-500/5">
+                    <AlertDescription className="text-xs text-foreground">
+                      {demand && (
+                        <div className="font-medium text-green-700 mb-1">
+                          {demand.category}: {demand.title}
+                        </div>
+                      )}
+                      <div>{achievement.text}</div>
+                    </AlertDescription>
+                  </Alert>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-6 text-muted-foreground">
+              <Info className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Nenhuma conquista</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };

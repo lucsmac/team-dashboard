@@ -16,10 +16,16 @@ export const getAllocationsByWeek = async (req, res) => {
     }
 
     const weekStartDate = new Date(weekStart);
+    const weekEndDate = new Date(weekStartDate);
+    weekEndDate.setDate(weekEndDate.getDate() + 7);
 
+    // Buscar usando range em vez de igualdade exata (resolve problemas de timezone)
     const allocations = await prisma.devWeekAllocation.findMany({
       where: {
-        weekStart: weekStartDate
+        weekStart: {
+          gte: weekStartDate,
+          lt: weekEndDate
+        }
       },
       include: {
         dev: {
@@ -52,11 +58,17 @@ export const getDevAllocationByWeek = async (req, res) => {
   try {
     const { devId, weekStart } = req.params;
     const weekStartDate = new Date(weekStart);
+    const weekEndDate = new Date(weekStartDate);
+    weekEndDate.setDate(weekEndDate.getDate() + 7);
 
+    // Buscar usando range em vez de igualdade exata (resolve problemas de timezone)
     const allocations = await prisma.devWeekAllocation.findMany({
       where: {
         devId: parseInt(devId),
-        weekStart: weekStartDate
+        weekStart: {
+          gte: weekStartDate,
+          lt: weekEndDate
+        }
       },
       orderBy: {
         allocationType: 'asc'
@@ -253,9 +265,17 @@ export const getCurrentWeekStats = async (req, res) => {
     currentWeekStart.setDate(now.getDate() - now.getDay());
     currentWeekStart.setHours(0, 0, 0, 0);
 
+    // Calcular fim da semana para buscar com range
+    const currentWeekEnd = new Date(currentWeekStart);
+    currentWeekEnd.setDate(currentWeekEnd.getDate() + 7);
+
+    // Buscar usando range em vez de igualdade exata (resolve problemas de timezone)
     const allocations = await prisma.devWeekAllocation.findMany({
       where: {
-        weekStart: currentWeekStart
+        weekStart: {
+          gte: currentWeekStart,
+          lt: currentWeekEnd
+        }
       },
       include: {
         dev: {
